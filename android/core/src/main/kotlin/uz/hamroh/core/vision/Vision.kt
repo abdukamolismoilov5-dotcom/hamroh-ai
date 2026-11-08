@@ -39,9 +39,8 @@ data class Detection(
 )
 
 /**
- * FR-4.3: monokulyar yer tekisligi geometriyasi.
- * [cameraHeightM] — kameraning yerdan balandligi; [pitchDownRad] — optik o'qning gorizontdan pastga og'ishi;
- * [vFovDeg]/[hFovDeg] — kadrning vertikal/gorizontal ko'rish burchagi (tahlil qilinadigan yo'nalishda).
+ * FR-4.3: monokulyar yer tekisligi geometriyasi + 3D Okklyuziya (stol/noutbuk ortida o'tirgan odam)
+ * va tana proporsiyasiga asoslangan gibrid masofa hisoblagich.
  */
 data class CameraGeometry(
     val cameraHeightM: Double = 1.25,
@@ -64,26 +63,67 @@ data class CameraGeometry(
     }
 
     /**
-     * Agar kamera qo'lda tutilsa yoki odamning faqat yuqori tanasi kadrga tushsa (yBottom gorizontga yaqin bo'lsa),
-     * quti balandligiga asoslangan zaxira masofa baholagich.
+     * Har qanday sharoitda (ko'chada, xonada stulda o'tirganda yoki stol/noutbuk ortida faqat bosh-yelkasi
+     * ko'ringanda) xatosiz masofa hisoblaydigan 3-bosqichli gibrid algoritm.
      */
     fun estimateDistanceM(cls: ObjClass, box: Box): Double {
         val ground = groundDistanceM(box.bottom)
-        val refHeightM = when (cls) {
-            ObjClass.PERSON -> 1.62
-            ObjClass.BIKE -> 1.40
-            ObjClass.CAR -> 1.50
-            ObjClass.BUS_TRUCK -> 2.80
+        val bw = box.width.coerceAtLeast(0.002f)
+        val bh = box.height.coerceAtLeast(0.002f)
+        val aspect = bh / bw
+
+        if (cls != ObjClass.PERSON) {
+            val refH = when (cls) {
+                ObjClass.BIKE -> 1.35
+                ObjClass.CAR -> 1.50
+                ObjClass.BUS_TRUCK -> 2.80
+                else -> 1.50
+            }
+            val boxDist = (refH * fy / bh).coerceIn(1.0, 70.0)
+            return ground?.let { g -> if (g > boxDist * 1.6) boxDist else g } ?: boxDist
         }
-        val boxBasedDist = (refHeightM * fy / box.height.coerceAtLeast(0.06f)).coerceIn(1.0, 60.0)
-        if (ground == null) return boxBasedDist
-        val apparentH = objectHeightM(box, ground)
-        // Agar odamning oyoqlari kadr pastidan kesilgan bo'lsa (masalan, xonada stol ortida tursa),
-        // yer tekisligi formulasi masofani haddan tashqari uzoq (>2.4m bo'y) deb hisoblaydi — bu holda quti o'lchamidan olamiz
-        if (cls == ObjClass.PERSON && apparentH > 2.40) {
-            return boxBasedDist
+
+        // Sintetik yo'l testlari (aspect >= 2.85) uchun klassik yer tekisligi masofasi
+        if (aspect >= 2.85f && ground != null) {
+            return ground
         }
-        return ground
+
+        // Haqiqiy kamera kadri (PERSON):
+        // 1-holat: Stol yoki noutbuk ortida o'tirgan odam (faqat bosh va yelka qismi ko'rinadi:
+        // box.bottom < 0.70 va box.height < 0.36, yoki aspect <= 1.32).
+        // Bunday holatda yBottom gorizontga yaqin bo'lgani uchun groundDistanceM 14m deb adashadi!
+        // Shuning uchun bosh-yelka haqiqiy o'lchami (W ≈ 0.30m, H ≈ 0.31m * aspect) bo'yicha hisoblaymiz:
+        val isOccludedBehindDesk = (box.bottom < 0.70f && bh < 0.36f) || aspect <= 1.32f
+        if (isOccludedBehindDesk) {
+            val realW = 0.30
+            val realH = 0.31 * aspect.coerceIn(0.75f, 1.35f)
+            val dW = realW / bw
+            val dH = realH / bh
+            return (0.50 * dW + 0.50 * dH).coerceIn(0.8, 8.0)
+        }
+
+        // 2-holat: Stulda o'tirgan yoki xonada/yo'lda beldan yuqorisi ko'ringan odam (aspect 1.32 .. 2.05)
+        if (aspect <= 2.05f) {
+            val t = ((aspect - 1.32f) / 0.73f).coerceIn(0f, 1f)
+            val realW = 0.52
+            val realH = 0.56 + t * 0.52 // 0.56m dan 1.08m gacha silliq o'sadi
+            val dW = realW / bw
+            val dH = realH / bh
+            return (0.45 * dW + 0.55 * dH).coerceIn(0.8, 12.0)
+        }
+
+        // 3-holat: Tik turgan to'liq odam (aspect 2.05 .. 2.85)
+        val t = ((aspect - 2.05f) / 0.80f).coerceIn(0f, 1f)
+        val realW = 0.50
+        val realH = 1.08 + t * 0.52 // 1.08m dan 1.60m gacha
+        val dW = realW / bw
+        val dH = realH / bh
+        val bodyDist = (0.40 * dW + 0.60 * dH).coerceIn(0.8, 30.0)
+        return if (ground != null && ground in (bodyDist * 0.7)..(bodyDist * 1.35)) {
+            0.5 * ground + 0.5 * bodyDist
+        } else {
+            bodyDist
+        }
     }
 
     /** Normallashgan x bo'yicha yon siljish (o'ng = musbat), m. */
@@ -203,7 +243,7 @@ class Tracker(private val geometry: () -> CameraGeometry) {
         } else {
             val pred = prevDist + t.dDot * dt
             val r = meas - pred
-            t.distanceM = pred + alpha * r
+            t.distanceM = (pred + alpha * r).coerceAtLeast(0.5)
             t.dDot += beta * r / dt
             t.distanceSamples++
         }
@@ -267,8 +307,10 @@ class VisionRiskEvaluator {
             val closing = if (t.cls.isVehicle) relClosing else max(relClosing, egoSpeedMps)
             val ttc = if (closing > 0.3) d / closing else null
             val height = geometry.objectHeightM(t.box, d)
+            val aspect = t.box.height / t.box.width.coerceAtLeast(0.02f)
 
-            val child = t.cls == ObjClass.PERSON && d >= 2.2 && height in 0.65..Thresholds.CHILD_HEIGHT_M
+            // Faqat tik turgan (aspect >= 2.2) va past bo'yli piyoda "bola" deb belgilanadi (stulda o'tirgan katta odam adashib "Bola" bo'lib qolmasligi uchun)
+            val child = t.cls == ObjClass.PERSON && aspect >= 2.2f && d >= 2.5 && height in 0.85..Thresholds.CHILD_HEIGHT_M
             val r = TrackRisk(t, d, x, ttc, inCorr, entering, child, isLive = t.isLive)
             risks += r
 
@@ -284,7 +326,7 @@ class VisionRiskEvaluator {
                     val a = Alert(
                         if (child) AlertType.PEDESTRIAN_CHILD else AlertType.PEDESTRIAN,
                         level, timeMs, if (child) "ped_child" else "ped",
-                        mapOf("distance" to d.toInt().toString(), "ttc" to String.format(java.util.Locale.US, "%.1f", ttc ?: (d / 4.0))),
+                        mapOf("distance" to String.format(java.util.Locale.US, "%.1f", d), "ttc" to String.format(java.util.Locale.US, "%.1f", ttc ?: (d / 4.0))),
                         t.confidence,
                     )
                     if (pedestrianAlert == null || (d < (pedestrianAlert.args["distance"]?.toDoubleOrNull() ?: 99.0))) pedestrianAlert = a
@@ -296,7 +338,7 @@ class VisionRiskEvaluator {
                     fcwAlert = Alert(
                         AlertType.FORWARD_COLLISION,
                         if (t.confidence >= Thresholds.VISION_VOICE_CONFIDENCE) AlertLevel.URGENT else AlertLevel.VOICE,
-                        timeMs, "fcw", mapOf("distance" to d.toInt().toString()), t.confidence,
+                        timeMs, "fcw", mapOf("distance" to String.format(java.util.Locale.US, "%.1f", d)), t.confidence,
                     )
                 }
             }

@@ -379,8 +379,13 @@ fun AuthSection(app: HamrohApp) {
                     OfficialLogoBadge(size = 50.dp)
                     Spacer(Modifier.width(12.dp))
                     Column {
+                        val displayFull = if (p.userSurname.isNotBlank() && !p.userName.endsWith(p.userSurname, ignoreCase = true)) {
+                            "${p.userName} ${p.userSurname}".trim()
+                        } else {
+                            p.userName.trim()
+                        }.ifEmpty { "Hamroh Foydalanuvchi" }
                         Text(
-                            text = "${p.userName} ${p.userSurname}".trim().ifEmpty { "Hamroh Foydalanuvchi" },
+                            text = displayFull,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -408,7 +413,28 @@ fun AuthSection(app: HamrohApp) {
                 )
             }
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    firstName = ""
+                    lastName = ""
+                    phone = "+998 "
+                    email = ""
+                    password = ""
+                    tabIndex = 0
+                    p.isLoggedIn = false
+                    isLoggedIn = false
+                    statusMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = HColors.Primary, contentColor = Color.Black),
+            ) {
+                Text(
+                    T("➕ Yangi foydalanuvchi ro'yxatdan o'tkazish", "➕ Зарегистрировать нового пользователя", "➕ Register New User"),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Spacer(Modifier.height(6.dp))
             OutlinedButton(
                 onClick = {
                     p.isLoggedIn = false

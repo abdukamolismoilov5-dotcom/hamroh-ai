@@ -195,8 +195,13 @@ fun DriveScreen(app: HamrohApp) {
                             )
                         }
                     }
+                    val fullUser = if (app.prefs.userSurname.isNotBlank() && !app.prefs.userName.endsWith(app.prefs.userSurname, ignoreCase = true)) {
+                        "${app.prefs.userName} ${app.prefs.userSurname}".trim()
+                    } else {
+                        app.prefs.userName.trim()
+                    }
                     Text(
-                        if (app.prefs.userName.isNotBlank()) "👤 ${app.prefs.userName} ${app.prefs.userSurname}".trim()
+                        if (fullUser.isNotBlank()) "👤 $fullUser"
                         else T("Intellektual yo'l xavfsizligi tizimi", "Интеллектуальная система безопасности", "Intelligent Road Safety Cockpit"),
                         color = HColors.TextDim,
                         fontSize = 11.sp,
@@ -354,9 +359,20 @@ fun DriveScreen(app: HamrohApp) {
 
         ui.lastAlert?.let { a ->
             val danger = a.level == AlertLevel.URGENT
+            val closestLive = ui.risks.filter { it.isLive }.minByOrNull { it.distanceM }
+            val liveAlert = if (closestLive != null && a.type in setOf(
+                    uz.hamroh.core.model.AlertType.PEDESTRIAN,
+                    uz.hamroh.core.model.AlertType.PEDESTRIAN_CHILD,
+                    uz.hamroh.core.model.AlertType.FORWARD_COLLISION,
+                )
+            ) {
+                a.copy(args = a.args + ("distance" to String.format(java.util.Locale.US, "%.1f", closestLive.distanceM)))
+            } else {
+                a
+            }
             val text = if (a.dedupKey == "sos-sent")
                 T("SOS: ${a.args["delivered"]} ta yaqiningizga xabar yuborildi", "SOS: отправлено ${a.args["delivered"]} близким", "SOS: ${a.args["delivered"]} contacts notified")
-            else AlertText.of(a)
+            else AlertText.of(liveAlert)
 
             Row(
                 modifier = Modifier

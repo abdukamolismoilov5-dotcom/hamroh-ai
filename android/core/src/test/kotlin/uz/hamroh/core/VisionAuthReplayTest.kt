@@ -132,6 +132,18 @@ class VisionTest {
         assertEquals(10, LumaOps.maskGlare(img, 10, 10))
         assertTrue(img.all { (it.toInt() and 0xFF) < 250 })
     }
+
+    @Test fun indoorRoomAndOccludedDeskDistanceAccuracy() {
+        // 1. Noutbuk/stol ortida 2 metr masofada o'tirgan odam (faqat bosh va yelka ko'rinadi: width=0.15, height=0.16, bottom=0.57)
+        val occludedBehindLaptopBox = Box(0.49f, 0.41f, 0.64f, 0.57f)
+        val dOccluded = g.estimateDistanceM(ObjClass.PERSON, occludedBehindLaptopBox)
+        assertTrue("Expected ~2.0m for person behind laptop, got $dOccluded", dOccluded in 1.7..2.3)
+
+        // 2. Stulda 1.8–2.0 metr masofada o'tirgan odam (width=0.29, height=0.46, bottom=0.85)
+        val seatedPersonBox = Box(0.14f, 0.39f, 0.43f, 0.85f)
+        val dSeated = g.estimateDistanceM(ObjClass.PERSON, seatedPersonBox)
+        assertTrue("Expected ~1.8m for seated person, got $dSeated", dSeated in 1.5..2.2)
+    }
 }
 
 class AuthTest {
