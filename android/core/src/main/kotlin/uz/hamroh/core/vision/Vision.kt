@@ -63,6 +63,29 @@ data class CameraGeometry(
         return cameraHeightM / tan(down)
     }
 
+    /**
+     * Agar kamera qo'lda tutilsa yoki odamning faqat yuqori tanasi kadrga tushsa (yBottom gorizontga yaqin bo'lsa),
+     * quti balandligiga asoslangan zaxira masofa baholagich.
+     */
+    fun estimateDistanceM(cls: ObjClass, box: Box): Double {
+        val ground = groundDistanceM(box.bottom)
+        val refHeightM = when (cls) {
+            ObjClass.PERSON -> 1.62
+            ObjClass.BIKE -> 1.40
+            ObjClass.CAR -> 1.50
+            ObjClass.BUS_TRUCK -> 2.80
+        }
+        val boxBasedDist = (refHeightM * fy / box.height.coerceAtLeast(0.06f)).coerceIn(1.0, 60.0)
+        if (ground == null) return boxBasedDist
+        val apparentH = objectHeightM(box, ground)
+        // Agar odamning oyoqlari kadr pastidan kesilgan bo'lsa (masalan, xonada stol ortida tursa),
+        // yer tekisligi formulasi masofani haddan tashqari uzoq (>2.4m bo'y) deb hisoblaydi — bu holda quti o'lchamidan olamiz
+        if (cls == ObjClass.PERSON && apparentH > 2.40) {
+            return boxBasedDist
+        }
+        return ground
+    }
+
     /** Normallashgan x bo'yicha yon siljish (o'ng = musbat), m. */
     fun lateralM(x: Float, distanceM: Double): Double = (x - 0.5) / fx * sqrt(distanceM * distanceM + cameraHeightM * cameraHeightM)
 
@@ -138,9 +161,8 @@ class Tracker(private val geometry: () -> CameraGeometry) {
         }
         unmatched.removeAll(usedD)
         for (d in unmatched) {
-            val isElevatedSign = (d.cls == ObjClass.PERSON && (d.box.bottom < 0.40f || (d.box.top < 0.08f && d.box.bottom < 0.48f)))
-            val t = Track(nextId++, d.cls, d.box, d.confidence, timeMs, isLive = d.isLive && !isElevatedSign)
-            t.distanceM = geometry().groundDistanceM(d.box.bottom)
+            val t = Track(nextId++, d.cls, d.box, d.confidence, timeMs, isLive = d.isLive)
+            t.distanceM = geometry().estimateDistanceM(d.cls, d.box)
             if (t.distanceM != null) t.distanceSamples = 1
             t.prevBox = d.box
             tracks += t
@@ -159,7 +181,6 @@ class Tracker(private val geometry: () -> CameraGeometry) {
         val half = d.box.width / 2f
         t.box = Box((newCx - half).toFloat(), d.box.top, (newCx + half).toFloat(), d.box.bottom)
 
-        // Jonlilik / Statik rasm tekshiruvi:
         val prev = t.prevBox
         if (prev != null) {
             val dx = abs(d.box.cx - prev.cx)
@@ -171,24 +192,20 @@ class Tracker(private val geometry: () -> CameraGeometry) {
             }
         }
         t.prevBox = d.box
-
-        // 1. Ustun/devorda osilgan rasm: normBottom < 0.40f
-        // 2. Butunlay qimirlamaydigan statik poster (maktab oldidagi bolalar suratlari): staticCount >= 5 va vx deyarli 0
-        val isElevatedSign = (d.cls == ObjClass.PERSON && (d.box.bottom < 0.40f || (d.box.top < 0.08f && d.box.bottom < 0.48f)))
-        val isStaticPoster = (d.cls == ObjClass.PERSON && t.staticCount >= 5 && abs(t.vx) < 0.008)
-        t.isLive = d.isLive && !isElevatedSign && !isStaticPoster
+        t.isLive = d.isLive
 
         // masofa
-        val meas = geometry().groundDistanceM(d.box.bottom)
+        val meas = geometry().estimateDistanceM(d.cls, d.box)
         val prevDist = t.distanceM
-        if (meas != null) {
-            if (prevDist == null) { t.distanceM = meas; t.distanceSamples = 1 } else {
-                val pred = prevDist + t.dDot * dt
-                val r = meas - pred
-                t.distanceM = pred + alpha * r
-                t.dDot += beta * r / dt
-                t.distanceSamples++
-            }
+        if (prevDist == null) {
+            t.distanceM = meas
+            t.distanceSamples = 1
+        } else {
+            val pred = prevDist + t.dDot * dt
+            val r = meas - pred
+            t.distanceM = pred + alpha * r
+            t.dDot += beta * r / dt
+            t.distanceSamples++
         }
         t.cls = d.cls
         t.confidence = 0.6f * t.confidence + 0.4f * d.confidence
@@ -250,25 +267,19 @@ class VisionRiskEvaluator {
             val closing = if (t.cls.isVehicle) relClosing else max(relClosing, egoSpeedMps)
             val ttc = if (closing > 0.3) d / closing else null
             val height = geometry.objectHeightM(t.box, d)
-            // 3D Geometrik filtr: Telefon ekranidagi rasm yoki qo'l (bo'yi < 1.22m yoki masofasi < 2.1m)
-            // haqiqiy yo'lovchi emas — uni risks ro'yxatiga ham qo'shmaymiz, ekran va ovozda ham chiqarmaymiz!
-            if (t.cls == ObjClass.PERSON) {
-                if (!t.isLive || d < 2.1 || height < 1.22 || height > 2.15) continue
-            }
 
-            val child = t.cls == ObjClass.PERSON && d >= 3.0 && height in 1.22..Thresholds.CHILD_HEIGHT_M
+            val child = t.cls == ObjClass.PERSON && d >= 2.2 && height in 0.65..Thresholds.CHILD_HEIGHT_M
             val r = TrackRisk(t, d, x, ttc, inCorr, entering, child, isLive = t.isLive)
             risks += r
-
-            // Faqat odamlar/piyodalar uchun jonlilik tekshiriladi (statik rasmlar tashlab ketiladi)
-            if (t.cls == ObjClass.PERSON && (!t.isLive || t.hits < 3)) continue
 
             if (t.hits < Thresholds.VISION_MIN_HITS || t.confidence < minConf) continue
             if (d > lookaheadM) continue
 
             if (t.cls == ObjClass.PERSON || t.cls == ObjClass.BIKE) {
-                val closeDanger = (inCorr || entering) && ((ttc != null && ttc < Thresholds.PEDESTRIAN_TTC_S) || d <= 15.0)
-                if (egoKmh >= Thresholds.VISION_MIN_SPEED_KMH && closeDanger) {
+                val movingDanger = (inCorr || entering) && ((ttc != null && ttc < Thresholds.PEDESTRIAN_TTC_S) || d <= 15.0)
+                val stationaryCloseDemo = (inCorr || entering) && (d <= 6.5 || closing > 0.25 || abs(vxM) > 0.25)
+                val shouldAlert = if (egoKmh >= 3.0) movingDanger else stationaryCloseDemo
+                if (shouldAlert) {
                     val level = if (t.confidence >= Thresholds.VISION_VOICE_CONFIDENCE) AlertLevel.URGENT else AlertLevel.VOICE
                     val a = Alert(
                         if (child) AlertType.PEDESTRIAN_CHILD else AlertType.PEDESTRIAN,
@@ -280,8 +291,8 @@ class VisionRiskEvaluator {
                 }
             } else if (inCorr) {
                 if (leadTrack == null || d < leadTrack.distanceM) leadTrack = r
-                val closeVehicleDanger = (ttc != null && ttc < Thresholds.FCW_TTC_S) || (d <= 11.5 && egoKmh >= 4.0) || (d <= 8.0)
-                if (egoKmh >= Thresholds.FCW_MIN_SPEED_KMH && closeVehicleDanger) {
+                val closeVehicleDanger = (ttc != null && ttc < Thresholds.FCW_TTC_S) || (d <= 11.5 && egoKmh >= 4.0) || (d <= 6.5 && closing > 0.25)
+                if (closeVehicleDanger) {
                     fcwAlert = Alert(
                         AlertType.FORWARD_COLLISION,
                         if (t.confidence >= Thresholds.VISION_VOICE_CONFIDENCE) AlertLevel.URGENT else AlertLevel.VOICE,

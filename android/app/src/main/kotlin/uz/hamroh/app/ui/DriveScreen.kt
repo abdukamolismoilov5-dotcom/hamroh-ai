@@ -847,7 +847,9 @@ private fun CameraPreview(app: HamrohApp) {
     }
 
     val liveRisks = ui.risks.filter { it.isLive }
-    val hasDanger = liveRisks.any { it.inCorridor || it.entering }
+    val isDriverMode = ui.cameraStatus == "driver"
+    val isEyesClosed = isDriverMode && (ui.earValue != null && ui.earValue!! < 0.21f)
+    val hasDanger = if (isDriverMode) isEyesClosed else liveRisks.any { it.inCorridor || it.entering }
 
     Box(
         Modifier
@@ -863,24 +865,6 @@ private fun CameraPreview(app: HamrohApp) {
     ) {
         AndroidView(factory = { view }, modifier = Modifier.fillMaxSize())
         Canvas(Modifier.fillMaxSize()) {
-            val hy = ui.horizonY * size.height
-            // Gorizont chizig'i
-            drawLine(Color(0x6638BDF8), Offset(0f, hy), Offset(size.width, hy), strokeWidth = 2f)
-
-            // Harakat koridori chiziqlari (Cyber Lane Corridor)
-            drawLine(
-                Color(0x66E2E8F0),
-                Offset(size.width * 0.42f, hy),
-                Offset(size.width * 0.14f, size.height),
-                strokeWidth = 3f,
-            )
-            drawLine(
-                Color(0x66E2E8F0),
-                Offset(size.width * 0.58f, hy),
-                Offset(size.width * 0.86f, size.height),
-                strokeWidth = 3f,
-            )
-
             // Cyber HUD Corner Brackets
             val bracketLen = 28f
             val m = 16f
@@ -898,50 +882,95 @@ private fun CameraPreview(app: HamrohApp) {
             drawLine(hudCol, Offset(size.width - m, size.height - m), Offset(size.width - m - bracketLen, size.height - m), strokeWidth = 4f)
             drawLine(hudCol, Offset(size.width - m, size.height - m), Offset(size.width - m, size.height - m - bracketLen), strokeWidth = 4f)
 
-            // Draw bounding boxes for live objects (sorted by closest distance)
-            val sortedRisks = liveRisks.sortedBy { it.distanceM }
-            sortedRisks.forEachIndexed { idx, r ->
-                val b = r.track.box
-                val danger = r.inCorridor || r.entering
-                val boxColor = if (danger) Color(0xFFFF2E4C) else Color(0xFF38BDF8)
-                val left = (b.left * size.width).coerceIn(4f, size.width - 20f)
-                val top = (b.top * size.height).coerceIn(4f, size.height - 20f)
-                val w = (b.width * size.width).coerceAtLeast(16f)
-                val h = (b.height * size.height).coerceAtLeast(16f)
+            if (isDriverMode) {
+                // 468-Nuqtali Biometrik Yuz va Ko'z Skayneri HUD
+                val fb = ui.faceBox
+                if (fb != null) {
+                    val fCol = if (isEyesClosed) Color(0xFFFF2E4C) else Color(0xFF10B981)
+                    val left = (fb.left * size.width).coerceIn(12f, size.width - 24f)
+                    val top = (fb.top * size.height).coerceIn(12f, size.height - 24f)
+                    val w = (fb.width * size.width).coerceAtLeast(36f)
+                    val h = (fb.height * size.height).coerceAtLeast(36f)
+                    drawRoundRect(
+                        color = fCol,
+                        topLeft = Offset(left, top),
+                        size = Size(w, h),
+                        cornerRadius = CornerRadius(14f, 14f),
+                        style = Stroke(width = if (isEyesClosed) 5f else 3f),
+                    )
+                }
+                val ptCol = if (isEyesClosed) Color(0xFFFF2E4C) else Color(0xFF38BDF8)
+                ui.facePoints.forEachIndexed { i, (nx, ny) ->
+                    val px = nx * size.width
+                    val py = ny * size.height
+                    // Dastlabki 12 ta nuqta — chap va o'ng ko'z konturi
+                    val radius = if (i < 12) 5.5f else 3.8f
+                    drawCircle(color = ptCol, radius = radius, center = Offset(px, py))
+                }
+            } else {
+                val hy = ui.horizonY * size.height
+                // Gorizont chizig'i
+                drawLine(Color(0x6638BDF8), Offset(0f, hy), Offset(size.width, hy), strokeWidth = 2f)
 
-                drawRoundRect(
-                    color = boxColor,
-                    topLeft = Offset(left, top),
-                    size = Size(w, h),
-                    cornerRadius = CornerRadius(10f, 10f),
-                    style = Stroke(width = if (danger) 5.5f else 3.5f),
+                // Harakat koridori chiziqlari (Cyber Lane Corridor)
+                drawLine(
+                    Color(0x66E2E8F0),
+                    Offset(size.width * 0.42f, hy),
+                    Offset(size.width * 0.14f, size.height),
+                    strokeWidth = 3f,
+                )
+                drawLine(
+                    Color(0x66E2E8F0),
+                    Offset(size.width * 0.58f, hy),
+                    Offset(size.width * 0.86f, size.height),
+                    strokeWidth = 3f,
                 )
 
-                // Draw clean pill label for top 3 closest objects to avoid clutter
-                if (idx < 3) {
-                    val label = buildString {
-                        if (r.likelyChild) append("🚸 Bola ") else append(detLabel(r.track.cls)).append(" ")
-                        append("%.0fm".format(java.util.Locale.US, r.distanceM))
-                        r.ttcS?.let { t -> if (t < 9.9) append(" · %.1fs".format(java.util.Locale.US, t)) }
-                    }
-                    val textW = textPaint.measureText(label)
-                    val pillLeft = left.coerceIn(10f, (size.width - textW - 28f).coerceAtLeast(10f))
-                    val pillTop = if (top > 48f) top - 38f else (top + 8f)
-                    val rect = RectF(pillLeft, pillTop, pillLeft + textW + 20f, pillTop + 34f)
-                    pillStrokePaint.color = if (danger) android.graphics.Color.rgb(255, 46, 76) else android.graphics.Color.rgb(56, 189, 248)
-                    drawContext.canvas.nativeCanvas.drawRoundRect(rect, 8f, 8f, pillPaint)
-                    drawContext.canvas.nativeCanvas.drawRoundRect(rect, 8f, 8f, pillStrokePaint)
-                    drawContext.canvas.nativeCanvas.drawText(
-                        label,
-                        pillLeft + 10f,
-                        pillTop + 25f,
-                        textPaint,
+                // Draw bounding boxes for live objects (sorted by closest distance)
+                val sortedRisks = liveRisks.sortedBy { it.distanceM }
+                sortedRisks.forEachIndexed { idx, r ->
+                    val b = r.track.box
+                    val danger = r.inCorridor || r.entering
+                    val boxColor = if (danger) Color(0xFFFF2E4C) else Color(0xFF38BDF8)
+                    val left = (b.left * size.width).coerceIn(4f, size.width - 20f)
+                    val top = (b.top * size.height).coerceIn(4f, size.height - 20f)
+                    val w = (b.width * size.width).coerceAtLeast(16f)
+                    val h = (b.height * size.height).coerceAtLeast(16f)
+
+                    drawRoundRect(
+                        color = boxColor,
+                        topLeft = Offset(left, top),
+                        size = Size(w, h),
+                        cornerRadius = CornerRadius(10f, 10f),
+                        style = Stroke(width = if (danger) 5.5f else 3.5f),
                     )
+
+                    // Draw clean pill label for top 5 closest objects
+                    if (idx < 5) {
+                        val label = buildString {
+                            if (r.likelyChild) append("🚸 Bola ") else append(detLabel(r.track.cls)).append(" ")
+                            append("%.1fm".format(java.util.Locale.US, r.distanceM))
+                            r.ttcS?.let { t -> if (t < 9.9) append(" · %.1fs".format(java.util.Locale.US, t)) }
+                        }
+                        val textW = textPaint.measureText(label)
+                        val pillLeft = left.coerceIn(10f, (size.width - textW - 28f).coerceAtLeast(10f))
+                        val pillTop = if (top > 48f) top - 38f else (top + 8f)
+                        val rect = RectF(pillLeft, pillTop, pillLeft + textW + 20f, pillTop + 34f)
+                        pillStrokePaint.color = if (danger) android.graphics.Color.rgb(255, 46, 76) else android.graphics.Color.rgb(56, 189, 248)
+                        drawContext.canvas.nativeCanvas.drawRoundRect(rect, 8f, 8f, pillPaint)
+                        drawContext.canvas.nativeCanvas.drawRoundRect(rect, 8f, 8f, pillStrokePaint)
+                        drawContext.canvas.nativeCanvas.drawText(
+                            label,
+                            pillLeft + 10f,
+                            pillTop + 25f,
+                            textPaint,
+                        )
+                    }
                 }
             }
         }
 
-        // Yuqori jonli holat paneli
+        // Yuqori chap jonli holat paneli
         Row(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -968,36 +997,81 @@ private fun CameraPreview(app: HamrohApp) {
                 "road" -> "%.0f FPS · %d %s".format(java.util.Locale.US, ui.visionFps.coerceAtLeast(1f), liveRisks.size, T("jonli obyekt", "объектов", "live objects"))
                 "driver" -> {
                     val earTxt = ui.earValue?.let { "EAR %.2f".format(java.util.Locale.US, it) } ?: T("Yuz qidirilmoqda…", "Поиск лица…", "Scanning face…")
-                    "${T("Haydovchi nazorati", "Контроль водителя", "Driver AI")} · $earTxt"
+                    "${T("468-Nuqta DMS", "468-точек DMS", "468-pt DMS")} · $earTxt"
                 }
                 else -> T("Kamera AI faollashmoqda…", "Запуск ИИ камеры…", "Starting AI camera…")
             }
             Text(statusTxt, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
         }
 
-        // Pastki eng yaqin obyekt ma'lumoti
-        val closestRisk = liveRisks.minByOrNull { it.distanceM }
-        if (closestRisk != null) {
-            val isCloseDanger = closestRisk.inCorridor || closestRisk.entering
-            val bottomInfo = "${detLabel(closestRisk.track.cls)}: %.1f m".format(java.util.Locale.US, closestRisk.distanceM) +
-                (closestRisk.ttcS?.let { t -> " · TTC %.1f s".format(java.util.Locale.US, t) } ?: "")
+        // Yuqori o'ng: 1-bosishda Old / Orqa kamerani almashtirish tugmasi (Komissiya/Domla tekshiruvi uchun qulay)
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(10.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xDD0F172A))
+                .border(1.dp, Color(0xFF38BDF8), RoundedCornerShape(8.dp))
+                .clickable {
+                    app.prefs.cameraMode = if (app.prefs.cameraMode == "driver") "road" else "driver"
+                    DriveService.signal(ctx, DriveService.ACTION_REFRESH_SETTINGS)
+                }
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                if (isDriverMode) T("🔄 Yo'l AI (Orqa)", "🔄 Дорога (Задн.)", "🔄 Road AI")
+                else T("🔄 Yuz DMS (Old)", "🔄 Лицо DMS (Фронт.)", "🔄 Face DMS"),
+                color = Color(0xFF38BDF8),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        // Pastki ma'lumot paneli (Road mode yoki Driver DMS mode uchun)
+        if (isDriverMode) {
+            val ear = ui.earValue
+            val dmsInfo = when {
+                ear == null -> T("👁️ Yuzni kameraga qarating (468 nuqtali biometrik skaner)…", "👁️ Направьте камеру на лицо (468 точек)…", "👁️ Point camera at face (468-pt scanner)…")
+                ear < 0.21f -> T("🚨 DIQQAT: KO'Z YUMILDI! (EAR %.2f) — UYQU XAVFI!".format(java.util.Locale.US, ear), "🚨 ВНИМАНИЕ: ГЛАЗА ЗАКРЫТЫ! (EAR %.2f)".format(java.util.Locale.US, ear), "🚨 EYES CLOSED! (EAR %.2f)".format(java.util.Locale.US, ear))
+                else -> T("✅ KO'Z OCHIQ · Hushyor (EAR %.2f · 468 nuqta aktiv)".format(java.util.Locale.US, ear), "✅ ГЛАЗА ОТКРЫТЫ · Бодр (EAR %.2f)".format(java.util.Locale.US, ear), "✅ EYES OPEN · Alert (EAR %.2f)".format(java.util.Locale.US, ear))
+            }
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(10.dp)
-                    .background(if (isCloseDanger) Color(0xDDFF2E4C) else Color(0xCC050508), RoundedCornerShape(8.dp))
-                    .border(1.dp, if (isCloseDanger) Color.White else HColors.Border, RoundedCornerShape(8.dp))
+                    .background(if (isEyesClosed) Color(0xDDFF2E4C) else Color(0xCC050508), RoundedCornerShape(8.dp))
+                    .border(1.dp, if (isEyesClosed) Color.White else Color(0xFF10B981), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Text(if (isCloseDanger) "⚠️" else "🎯", fontSize = 12.sp)
-                Text(
-                    bottomInfo,
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                )
+                Text(dmsInfo, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+        } else {
+            val closestRisk = liveRisks.minByOrNull { it.distanceM }
+            if (closestRisk != null) {
+                val isCloseDanger = closestRisk.inCorridor || closestRisk.entering
+                val bottomInfo = "${detLabel(closestRisk.track.cls)}: %.1f m".format(java.util.Locale.US, closestRisk.distanceM) +
+                    (closestRisk.ttcS?.let { t -> " · TTC %.1f s".format(java.util.Locale.US, t) } ?: "")
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(10.dp)
+                        .background(if (isCloseDanger) Color(0xDDFF2E4C) else Color(0xCC050508), RoundedCornerShape(8.dp))
+                        .border(1.dp, if (isCloseDanger) Color.White else HColors.Border, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(if (isCloseDanger) "⚠️" else "🎯", fontSize = 12.sp)
+                    Text(
+                        bottomInfo,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
         }
     }

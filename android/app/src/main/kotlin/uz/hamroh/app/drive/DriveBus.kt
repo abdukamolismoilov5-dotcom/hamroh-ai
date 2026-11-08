@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import uz.hamroh.core.drive.DriveState
 import uz.hamroh.core.model.Alert
 import uz.hamroh.core.safety.CrashSosMachine
+import uz.hamroh.core.vision.Box
 import uz.hamroh.core.vision.TrackRisk
 
 /** Xizmat holati: UI va overlay shu yerdan o'qiydi (bitta jarayon ichida). */
@@ -33,6 +34,8 @@ data class DriveUi(
     val risks: List<TrackRisk> = emptyList(),
     val detectionsCount: Int = 0,
     val earValue: Float? = null,
+    val faceBox: Box? = null,
+    val facePoints: List<Pair<Float, Float>> = emptyList(),
     val horizonY: Float = 0.45f,
     val lat: Double? = null,
     val lon: Double? = null,

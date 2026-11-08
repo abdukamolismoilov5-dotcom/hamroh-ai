@@ -67,6 +67,7 @@ fun MoreScreen(app: HamrohApp, onLanguage: () -> Unit) {
             listOf(
                 T("💎 Obuna (15k)", "💎 Подписка", "💎 Subscription"),
                 T("👤 Profil / Kirish", "👤 Профиль", "👤 Profile / Auth"),
+                T("🗄️ SQL Baza", "🗄️ SQL База", "🗄️ SQL Database"),
                 T("Baho", "Оценка", "Score"),
                 T("AI baholash", "Оценка ИИ", "AI review"),
                 T("Kliplar", "Клипы", "Clips"),
@@ -80,11 +81,141 @@ fun MoreScreen(app: HamrohApp, onLanguage: () -> Unit) {
             when (section) {
                 0 -> SubscriptionSection(app)
                 1 -> AuthSection(app)
-                2 -> ScoreSection(app)
-                3 -> ReviewSection(app)
-                4 -> ClipsSection(app)
-                5 -> SettingsSection(app, onLanguage)
+                2 -> SqlDatabaseSection(app)
+                3 -> ScoreSection(app)
+                4 -> ReviewSection(app)
+                5 -> ClipsSection(app)
+                6 -> SettingsSection(app, onLanguage)
                 else -> AboutSection(app)
+            }
+        }
+    }
+}
+
+// ---------------- ICHKI SQLITE BAZA BOSHQARUV PANELI (100% OFLAYN) ----------------
+
+@Composable
+private fun SqlDatabaseSection(app: HamrohApp) {
+    val scope = rememberCoroutineScope()
+    var drivers by remember { mutableStateOf<List<LocalDb.DriverRow>>(emptyList()) }
+    var poiTotal by remember { mutableIntStateOf(0) }
+    var tripTotal by remember { mutableIntStateOf(0) }
+    var alertTotal by remember { mutableIntStateOf(0) }
+    var reload by remember { mutableIntStateOf(0) }
+
+    var newName by remember { mutableStateOf("") }
+    var newPhone by remember { mutableStateOf("+998 90 ") }
+    var newCar by remember { mutableStateOf("Chevrolet Cobalt") }
+    var newPlate by remember { mutableStateOf("40 A 777 AA") }
+    var sqlMsg by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(reload) {
+        withContext(Dispatchers.IO) {
+            val d = app.db.allDrivers()
+            val pCount = app.db.poiCount()
+            val tCount = app.db.recentTrips(100).size
+            val aCount = app.db.totalAlertCount()
+            drivers = d
+            poiTotal = pCount
+            tripTotal = tCount
+            alertTotal = aCount
+        }
+    }
+
+    Card(title = T("🗄️ Ichki SQLite3 Ma'lumotlar Bazasi (hamroh.db)", "🗄️ Внутренняя СУБД SQLite3 (hamroh.db)", "🗄️ On-Device SQLite3 Database (hamroh.db)")) {
+        Text(
+            T(
+                "✅ 100% AVTONOM OFLAYN BAZA: Kompyuter va internet o'chiq bo'lganda ham barcha foydalanuvchilar, safarlar va AI hodisalari telefonning ichki SQLite (`hamroh.db`) bazasida saqlanadi.",
+                "✅ 100% АВТОНОМНАЯ БАЗА: Работает полностью офлайн внутри телефона без компьютера и интернета.",
+                "✅ 100% AUTONOMOUS SQL DATABASE: Runs completely offline inside the phone with zero PC or internet dependency."
+            ),
+            color = HColors.Accent,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+        )
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        Text(
+            "📊 SQL Jadvallar holati:\n" +
+                "• drivers (Foydalanuvchilar): ${drivers.size} ta yozuv\n" +
+                "• poi (Radar va Maktab nuqtalari): $poiTotal ta yozuv\n" +
+                "• trip (Avtomobil safarlari): $tripTotal ta yozuv\n" +
+                "• alert_log (AI xavf signallari): $alertTotal ta yozuv",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+        )
+    }
+
+    Card(title = T("➕ Yangi Foydalanuvchini SQL Bazaga Qo'shish (INSERT INTO drivers)", "➕ Добавить водителя в SQL (INSERT INTO drivers)", "➕ Insert Driver into SQL (INSERT INTO drivers)")) {
+        OutlinedTextField(
+            value = newName,
+            onValueChange = { newName = it },
+            label = { Text(T("Ism va Familiya", "Имя и Фамилия", "Full Name")) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = newPhone,
+            onValueChange = { newPhone = it },
+            label = { Text(T("Telefon raqami", "Номер телефона", "Phone Number")) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = newCar,
+                onValueChange = { newCar = it },
+                label = { Text(T("Avtomobil", "Автомобиль", "Car Model")) },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = newPlate,
+                onValueChange = { newPlate = it },
+                label = { Text(T("Davlat raqami", "Гос. номер", "License Plate")) },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Button(
+            onClick = {
+                if (newName.isBlank()) {
+                    sqlMsg = T("⚠️ Ism va familiyani kiriting!", "⚠️ Введите имя!", "⚠️ Enter name!")
+                    return@Button
+                }
+                scope.launch {
+                    val insertedId = withContext(Dispatchers.IO) {
+                        app.db.registerDriver(
+                            fullName = newName.trim(),
+                            phone = newPhone.trim(),
+                            carModel = newCar.trim().ifBlank { "Chevrolet Cobalt" },
+                            carPlate = newPlate.trim().ifBlank { "40 A 777 AA" },
+                        )
+                    }
+                    // Kompyuter yoqilgan bo'lsa fon rejimida yuborish
+                    val savedName = newName.trim()
+                    val savedPhone = newPhone.trim()
+                    scope.launch(Dispatchers.IO) {
+                        runCatching { app.api.register(savedPhone, savedName, "", "", "1234") }
+                    }
+                    newName = ""
+                    sqlMsg = "✅ SQL bajarildi: INSERT INTO drivers (id=#$insertedId, full_name='$savedName')"
+                    reload++
+                }
+            },
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+        ) {
+            Text(T("⚡ SQL Bazaga Yozish (INSERT INTO drivers)", "⚡ Записать в базу SQL", "⚡ Execute SQL INSERT"), fontWeight = FontWeight.Bold)
+        }
+        sqlMsg?.let { Text(it, color = HColors.Accent, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+    }
+
+    Card(title = T("📋 SELECT * FROM drivers ORDER BY id DESC (${drivers.size})", "📋 Таблица drivers (${drivers.size})", "📋 SQL Table: drivers (${drivers.size})")) {
+        drivers.forEach { d ->
+            Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Text("#${d.id} · ${d.fullName} (${d.plan})", fontWeight = FontWeight.Bold, color = HColors.Primary, fontSize = 14.sp)
+                Text("📱 ${d.phone}  |  🚗 ${d.carModel} (${d.carPlate})", fontSize = 12.sp)
+                Text("📍 ${d.region}  |  🛡️ Ball: ${d.safetyScore}/100  |  🕒 ${d.createdAt}", fontSize = 11.sp, color = HColors.TextDim)
+                HorizontalDivider(Modifier.padding(top = 6.dp))
             }
         }
     }

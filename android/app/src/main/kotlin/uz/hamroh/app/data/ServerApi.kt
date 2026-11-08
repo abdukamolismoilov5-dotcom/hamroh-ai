@@ -29,27 +29,42 @@ class ServerApi(private val prefs: Prefs) {
         auth: Boolean = true,
         headers: Map<String, String> = emptyMap()
     ): JSONObject {
-        val base = prefs.serverUrl.ifBlank { "http://10.150.233.172:8000" }
-        val c = URL(base.trimEnd('/') + path).openConnection() as HttpURLConnection
-        c.requestMethod = method
-        c.connectTimeout = 1_800
-        c.readTimeout = 2_500
-        c.setRequestProperty("Accept", "application/json")
-        if (auth) prefs.authToken?.let { c.setRequestProperty("Authorization", "Bearer $it") }
-        headers.forEach { (k, v) -> c.setRequestProperty(k, v) }
-        if (body != null) {
-            c.doOutput = true
-            c.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-            c.outputStream.use { it.write(body.toString().toByteArray()) }
+        val candidates = buildList {
+            if (prefs.serverUrl.isNotBlank()) add(prefs.serverUrl.trimEnd('/'))
+            add("http://192.168.199.78:8000")
+            add("http://10.0.2.2:8000")
+            add("http://127.0.0.1:8000")
+            add("http://10.150.233.172:8000")
+        }.distinct()
+
+        var lastErr: Exception? = null
+        for (base in candidates) {
+            try {
+                val c = URL(base + path).openConnection() as HttpURLConnection
+                c.requestMethod = method
+                c.connectTimeout = 900
+                c.readTimeout = 1_800
+                c.setRequestProperty("Accept", "application/json")
+                if (auth) prefs.authToken?.let { c.setRequestProperty("Authorization", "Bearer $it") }
+                headers.forEach { (k, v) -> c.setRequestProperty(k, v) }
+                if (body != null) {
+                    c.doOutput = true
+                    c.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                    c.outputStream.use { it.write(body.toString().toByteArray()) }
+                }
+                val code = c.responseCode
+                val text = (if (code in 200..299) c.inputStream else c.errorStream)?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (code == 401 && auth) prefs.authToken = null
+                if (code !in 200..299) {
+                    val detail = runCatching { JSONObject(text).optString("detail") }.getOrNull().orEmpty()
+                    throw HttpError(code, detail.ifEmpty { text.take(200) })
+                }
+                return if (text.isBlank()) JSONObject() else JSONObject(text)
+            } catch (e: Exception) {
+                lastErr = e
+            }
         }
-        val code = c.responseCode
-        val text = (if (code in 200..299) c.inputStream else c.errorStream)?.bufferedReader()?.use { it.readText() }.orEmpty()
-        if (code == 401 && auth) prefs.authToken = null
-        if (code !in 200..299) {
-            val detail = runCatching { JSONObject(text).optString("detail") }.getOrNull().orEmpty()
-            throw HttpError(code, detail.ifEmpty { text.take(200) })
-        }
-        return if (text.isBlank()) JSONObject() else JSONObject(text)
+        throw (lastErr ?: IOException("Serverga ulanib bo'lmadi"))
     }
 
     /** Token yo'q bo'lsa anonim yoki avtonom token oladi. */

@@ -9,28 +9,159 @@ import uz.hamroh.core.geo.Geo
 import uz.hamroh.core.geo.LatLon
 import uz.hamroh.core.model.Poi
 import uz.hamroh.core.model.PoiType
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-/** Mahalliy SQLite bazasi (TZ 5-bo'lim jadvallari). Barcha metodlar fon oqimidan chaqiriladi. */
-class LocalDb(context: Context) : SQLiteOpenHelper(context, "hamroh.db", null, 1) {
+/** Mahalliy SQLite bazasi (TZ 5-bo'lim jadvallari + Ichki Haydovchilar SQL Registri). Barcha metodlar 100% oflayn ishlaydi. */
+class LocalDb(context: Context) : SQLiteOpenHelper(context, "hamroh.db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE poi(id TEXT PRIMARY KEY, type TEXT NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL, " +
+        db.execSQL("CREATE TABLE IF NOT EXISTS poi(id TEXT PRIMARY KEY, type TEXT NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL, " +
             "speed_limit INTEGER, direction REAL, name TEXT, source TEXT NOT NULL, updated_at INTEGER NOT NULL)")
-        db.execSQL("CREATE INDEX poi_geo ON poi(lat, lon)")
-        db.execSQL("CREATE TABLE crowd_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, lat REAL NOT NULL, " +
+        db.execSQL("CREATE INDEX IF NOT EXISTS poi_geo ON poi(lat, lon)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS crowd_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, lat REAL NOT NULL, " +
             "lon REAL NOT NULL, severity REAL NOT NULL, ts INTEGER NOT NULL)")
-        db.execSQL("CREATE TABLE trip(id INTEGER PRIMARY KEY AUTOINCREMENT, started_at INTEGER NOT NULL, ended_at INTEGER, " +
+        db.execSQL("CREATE TABLE IF NOT EXISTS trip(id INTEGER PRIMARY KEY AUTOINCREMENT, started_at INTEGER NOT NULL, ended_at INTEGER, " +
             "distance_m REAL NOT NULL DEFAULT 0, max_speed REAL NOT NULL DEFAULT 0, night_m REAL NOT NULL DEFAULT 0, " +
             "speeding INTEGER NOT NULL DEFAULT 0, hard_brakes INTEGER NOT NULL DEFAULT 0, fatigue INTEGER NOT NULL DEFAULT 0, " +
             "distraction INTEGER NOT NULL DEFAULT 0)")
-        db.execSQL("CREATE TABLE alert_log(id INTEGER PRIMARY KEY AUTOINCREMENT, trip_id INTEGER, type TEXT NOT NULL, " +
+        db.execSQL("CREATE TABLE IF NOT EXISTS alert_log(id INTEGER PRIMARY KEY AUTOINCREMENT, trip_id INTEGER, type TEXT NOT NULL, " +
             "level TEXT NOT NULL, confidence REAL, lat REAL, lon REAL, ts INTEGER NOT NULL, shadow INTEGER NOT NULL DEFAULT 0, " +
             "feedback INTEGER)")
-        db.execSQL("CREATE TABLE clip(id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, sha256 TEXT, " +
+        db.execSQL("CREATE TABLE IF NOT EXISTS clip(id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, sha256 TEXT, " +
             "started_at INTEGER NOT NULL, reason TEXT NOT NULL, protected INTEGER NOT NULL DEFAULT 0)")
+        ensureDriversTable(db)
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        ensureDriversTable(db)
+    }
+
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        if (!db.isReadOnly) {
+            ensureDriversTable(db)
+        }
+    }
+
+    private fun ensureDriversTable(db: SQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS drivers(" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "full_name TEXT NOT NULL, " +
+                "phone TEXT NOT NULL UNIQUE, " +
+                "car_model TEXT NOT NULL, " +
+                "car_plate TEXT NOT NULL, " +
+                "region TEXT NOT NULL, " +
+                "safety_score INTEGER NOT NULL DEFAULT 100, " +
+                "plan TEXT NOT NULL DEFAULT 'PRO_BEPUL', " +
+                "created_at TEXT NOT NULL)"
+        )
+        val count = db.rawQuery("SELECT COUNT(*) FROM drivers", null).use { c ->
+            if (c.moveToFirst()) c.getInt(0) else 0
+        }
+        if (count == 0) {
+            val seeds = listOf(
+                arrayOf("Abdukamol Bozorov (Muallif)", "+998 90 123 45 67", "Chevrolet Cobalt", "40 A 777 AA", "Farg'ona viloyati", 99, "FOUNDER_VIP", "2026-11-01 09:00"),
+                arrayOf("Jasurbek Karimov", "+998 91 654 32 10", "Chevrolet Gentra", "40 B 555 BB", "Farg'ona sh.", 94, "PRO_OBUNA", "2026-11-02 11:20"),
+                arrayOf("Sardorbek Aliyev", "+998 93 777 88 99", "Chevrolet Onix", "01 M 888 MM", "Toshkent sh.", 97, "PRO_OBUNA", "2026-11-03 14:45"),
+                arrayOf("Otabek Rustamov", "+998 94 321 00 11", "Chevrolet Damas", "50 K 112 KK", "Namangan viloyati", 86, "STANDART", "2026-11-04 08:15"),
+                arrayOf("Ulug'bek Normatov", "+998 99 444 55 66", "Chevrolet Tracker-2", "60 Z 999 ZZ", "Andijon viloyati", 96, "PRO_OBUNA", "2026-11-05 17:30"),
+                arrayOf("Dilshod Yo'ldoshev", "+998 97 222 33 44", "Chevrolet Nexia-3", "30 X 345 XX", "Samarqand viloyati", 91, "STANDART", "2026-11-06 19:10"),
+            )
+            for (s in seeds) {
+                db.insertWithOnConflict("drivers", null, ContentValues().apply {
+                    put("full_name", s[0] as String)
+                    put("phone", s[1] as String)
+                    put("car_model", s[2] as String)
+                    put("car_plate", s[3] as String)
+                    put("region", s[4] as String)
+                    put("safety_score", s[5] as Int)
+                    put("plan", s[6] as String)
+                    put("created_at", s[7] as String)
+                }, SQLiteDatabase.CONFLICT_IGNORE)
+            }
+        }
+    }
+
+    // ---------- HAYDOVCHILAR (SQL DRIVERS TABLE — 100% OFLAYN) ----------
+    data class DriverRow(
+        val id: Long,
+        val fullName: String,
+        val phone: String,
+        val carModel: String,
+        val carPlate: String,
+        val region: String,
+        val safetyScore: Int,
+        val plan: String,
+        val createdAt: String,
+    )
+
+    fun registerDriver(
+        fullName: String,
+        phone: String,
+        carModel: String = "Chevrolet Cobalt",
+        carPlate: String = "40 A 777 AA",
+        region: String = "Farg'ona viloyati",
+        plan: String = "PRO_BEPUL",
+    ): Long {
+        val cleanName = fullName.trim().ifBlank { "Yangi Haydovchi" }
+        val cleanPhone = phone.trim().ifBlank { "+998 90 000 00 00" }
+        val nowStr = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+        val db = writableDatabase
+        val existingId = db.rawQuery("SELECT id FROM drivers WHERE phone=?", arrayOf(cleanPhone)).use { c ->
+            if (c.moveToFirst()) c.getLong(0) else null
+        }
+        return if (existingId != null) {
+            db.update("drivers", ContentValues().apply {
+                put("full_name", cleanName)
+                put("car_model", carModel)
+                put("car_plate", carPlate)
+                put("region", region)
+                put("created_at", nowStr)
+            }, "id=?", arrayOf(existingId.toString()))
+            existingId
+        } else {
+            db.insertWithOnConflict("drivers", null, ContentValues().apply {
+                put("full_name", cleanName)
+                put("phone", cleanPhone)
+                put("car_model", carModel)
+                put("car_plate", carPlate)
+                put("region", region)
+                put("safety_score", 100)
+                put("plan", plan)
+                put("created_at", nowStr)
+            }, SQLiteDatabase.CONFLICT_REPLACE)
+        }
+    }
+
+    fun allDrivers(): List<DriverRow> {
+        val out = ArrayList<DriverRow>()
+        readableDatabase.rawQuery(
+            "SELECT id,full_name,phone,car_model,car_plate,region,safety_score,plan,created_at FROM drivers ORDER BY id DESC",
+            null,
+        ).use { c ->
+            while (c.moveToNext()) {
+                out += DriverRow(
+                    id = c.getLong(0),
+                    fullName = c.getString(1),
+                    phone = c.getString(2),
+                    carModel = c.getString(3),
+                    carPlate = c.getString(4),
+                    region = c.getString(5),
+                    safetyScore = c.getInt(6),
+                    plan = c.getString(7),
+                    createdAt = c.getString(8),
+                )
+            }
+        }
+        return out
+    }
+
+    fun totalAlertCount(): Int = readableDatabase.rawQuery("SELECT COUNT(*) FROM alert_log", null).use {
+        if (it.moveToFirst()) it.getInt(0) else 0
+    }
 
     // ---------- POI ----------
     fun upsertPois(pois: List<Poi>, source: String) {

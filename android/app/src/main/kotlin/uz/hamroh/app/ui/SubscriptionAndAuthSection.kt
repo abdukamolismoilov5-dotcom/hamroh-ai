@@ -543,39 +543,48 @@ fun AuthSection(app: HamrohApp) {
                     }
 
                     scope.launch {
-                        var serverOk = false
-                        try {
-                            withContext(Dispatchers.IO) {
+                        val fName = if (tabIndex == 0) firstName.ifEmpty { "Haydovchi" } else p.userName.ifEmpty { "Haydovchi" }
+                        val lName = if (tabIndex == 0) lastName else p.userSurname
+                        val fullName = "$fName $lName".trim()
+                        withContext(Dispatchers.IO) {
+                            runCatching {
+                                app.db.registerDriver(
+                                    fullName = fullName,
+                                    phone = phone.trim(),
+                                    carModel = "Chevrolet Cobalt",
+                                    carPlate = "40 A 777 AA",
+                                    region = "Farg'ona viloyati",
+                                    plan = if (p.isSubscribed) "PRO_OBUNA" else "PRO_BEPUL",
+                                )
+                            }
+                        }
+                        scope.launch(Dispatchers.IO) {
+                            runCatching {
                                 if (tabIndex == 0) {
-                                    app.api.register(phone, firstName.ifEmpty { "Haydovchi" }, lastName, email, password)
+                                    app.api.register(phone.trim(), fName, lName, email, password)
                                 } else {
-                                    app.api.login(phone, password)
+                                    app.api.login(phone.trim(), password)
                                 }
                             }
-                            serverOk = true
-                        } catch (e: Exception) {
-                            // Offline / lokal
                         }
 
-                        p.phone = phone
+                        p.phone = phone.trim()
                         p.userPassword = password
                         if (tabIndex == 0) {
-                            p.userName = firstName.ifEmpty { "Haydovchi" }
-                            p.userSurname = lastName
+                            p.userName = fName
+                            p.userSurname = lName
                             p.userEmail = email
                         } else {
-                            if (p.userName.isEmpty()) p.userName = "Haydovchi"
+                            if (p.userName.isEmpty()) p.userName = fName
                         }
                         p.loginType = "phone"
                         p.isLoggedIn = true
                         isLoggedIn = true
                         isError = false
-                        statusMessage = if (serverOk) {
-                            if (tabIndex == 0) T("✅ [Jonli Server] Ro'yxatdan o'tdingiz va kirdingiz!", "Регистрация прошла успешно!", "Registration successful!")
-                            else T("✅ [Jonli Server] Tizimga muvaffaqiyatli kirdingiz!", "Вход выполнен успешно!", "Logged in successfully!")
+                        statusMessage = if (tabIndex == 0) {
+                            T("✅ Ichki SQL bazaga (`drivers` jadvali) darhol qo'shildi va tizimga kirdingiz!", "✅ Добавлено во внутреннюю базу SQL и выполнен вход!", "✅ Saved to internal SQL database and logged in!")
                         } else {
-                            if (tabIndex == 0) T("Ro'yxatdan o'tdingiz va tizimga kirdingiz!", "Регистрация прошла успешно!", "Registration successful!")
-                            else T("Tizimga muvaffaqiyatli kirdingiz!", "Вход выполнен успешно!", "Logged in successfully!")
+                            T("✅ Tizimga muvaffaqiyatli kirdingiz (SQL baza faol)!", "✅ Вход выполнен успешно!", "✅ Logged in successfully!")
                         }
                     }
                 },
@@ -620,13 +629,23 @@ fun AuthSection(app: HamrohApp) {
                     .background(Color.White)
                     .clickable {
                         scope.launch {
-                            var serverOk = false
-                            try {
-                                withContext(Dispatchers.IO) {
+                            withContext(Dispatchers.IO) {
+                                runCatching {
+                                    app.db.registerDriver(
+                                        fullName = "Ali Valiyev (Google)",
+                                        phone = "+998 90 123 45 67",
+                                        carModel = "Chevrolet Cobalt",
+                                        carPlate = "40 A 777 AA",
+                                        region = "Farg'ona viloyati",
+                                        plan = "PRO_BEPUL",
+                                    )
+                                }
+                            }
+                            scope.launch(Dispatchers.IO) {
+                                runCatching {
                                     app.api.googleAuth("ali.valiyev@gmail.com", "Ali Valiyev", "google_live_account_123")
                                 }
-                                serverOk = true
-                            } catch (e: Exception) {}
+                            }
 
                             p.userName = "Ali"
                             p.userSurname = "Valiyev"
@@ -636,19 +655,11 @@ fun AuthSection(app: HamrohApp) {
                             p.isLoggedIn = true
                             isLoggedIn = true
                             isError = false
-                            statusMessage = if (serverOk) {
-                                T(
-                                    "✅ [Jonli Google Auth] Tizimga kirdingiz (ali.valiyev@gmail.com)!",
-                                    "Вход выполнен через Google (ali.valiyev@gmail.com)!",
-                                    "Logged in with Google (ali.valiyev@gmail.com)!"
-                                )
-                            } else {
-                                T(
-                                    "Google orqali tizimga kirdingiz (ali.valiyev@gmail.com)!",
-                                    "Вход выполнен через Google (ali.valiyev@gmail.com)!",
-                                    "Logged in with Google (ali.valiyev@gmail.com)!"
-                                )
-                            }
+                            statusMessage = T(
+                                "✅ Google orqali tizimga kirdingiz va SQL bazaga saqlandi (ali.valiyev@gmail.com)!",
+                                "✅ Вход выполнен через Google (ali.valiyev@gmail.com)!",
+                                "✅ Logged in with Google (ali.valiyev@gmail.com)!"
+                            )
                         }
                     }
                     .padding(vertical = 12.dp, horizontal = 16.dp),

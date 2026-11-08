@@ -377,24 +377,40 @@ fun AuthStartupScreen(
                         }
 
                         scope.launch {
-                            try {
-                                withContext(Dispatchers.IO) {
+                            val fName = if (tabIndex == 0) firstName.ifEmpty { "Haydovchi" } else p.userName.ifEmpty { "Haydovchi" }
+                            val lName = if (tabIndex == 0) lastName else p.userSurname
+                            val fullName = "$fName $lName".trim()
+                            withContext(Dispatchers.IO) {
+                                runCatching {
+                                    app.db.registerDriver(
+                                        fullName = fullName,
+                                        phone = phone.trim(),
+                                        carModel = "Chevrolet Cobalt",
+                                        carPlate = "40 A 777 AA",
+                                        region = "Farg'ona viloyati",
+                                        plan = if (p.isSubscribed) "PRO_OBUNA" else "PRO_BEPUL",
+                                    )
+                                }
+                            }
+                            // Kompyuter yoqilgan bo'lsa fon rejimida sinxronlash (kutmasdan darhol kiradi!)
+                            scope.launch(Dispatchers.IO) {
+                                runCatching {
                                     if (tabIndex == 0) {
-                                        app.api.register(phone.trim(), firstName.ifEmpty { "Haydovchi" }, lastName, email, password)
+                                        app.api.register(phone.trim(), fName, lName, email, password)
                                     } else {
                                         app.api.login(phone.trim(), password)
                                     }
                                 }
-                            } catch (e: Exception) {}
+                            }
 
                             p.phone = phone.trim()
                             p.userPassword = password
                             if (tabIndex == 0) {
-                                p.userName = firstName.ifEmpty { "Haydovchi" }
-                                p.userSurname = lastName
+                                p.userName = fName
+                                p.userSurname = lName
                                 p.userEmail = email
                             } else {
-                                if (p.userName.isEmpty()) p.userName = "Haydovchi"
+                                if (p.userName.isEmpty()) p.userName = fName
                             }
                             p.loginType = "phone"
                             p.isLoggedIn = true
@@ -459,11 +475,23 @@ fun AuthStartupScreen(
                         .border(1.dp, Color(0xFF2A3144), RoundedCornerShape(12.dp))
                         .clickable {
                             scope.launch {
-                                try {
-                                    withContext(Dispatchers.IO) {
+                                withContext(Dispatchers.IO) {
+                                    runCatching {
+                                        app.db.registerDriver(
+                                            fullName = "Ali Valiyev (Google)",
+                                            phone = "+998 90 123 45 67",
+                                            carModel = "Chevrolet Cobalt",
+                                            carPlate = "40 A 777 AA",
+                                            region = "Farg'ona viloyati",
+                                            plan = "PRO_BEPUL",
+                                        )
+                                    }
+                                }
+                                scope.launch(Dispatchers.IO) {
+                                    runCatching {
                                         app.api.googleAuth("ali.valiyev@gmail.com", "Ali Valiyev", "google_live_account_123")
                                     }
-                                } catch (e: Exception) {}
+                                }
 
                                 p.userName = "Ali"
                                 p.userSurname = "Valiyev"

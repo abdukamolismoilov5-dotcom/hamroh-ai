@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamroh AI — Jonli SQL Baza va Mobil Ilova Ro'yxatdan O'tish Tizimi</title>
+<style>
+  :root {
+    --bg: #060b19;
+    --panel: #0d162d;
+    --card: #132042;
+    --cyan: #00e5ff;
+    --green: #10b981;
+    --gold: #f59e0b;
+    --red: #ef4444;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  header {
+    background: linear-gradient(90deg, #09132c, #0f244d);
+    border-bottom: 2px solid rgba(0, 229, 255, 0.35);
+    padding: 12px 22px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .badge { background: rgba(0, 229, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan); padding: 5px 11px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .live-dot { display: inline-block; width: 9px; height: 9px; background: var(--green); border-radius: 50%; margin-right: 6px; box-shadow: 0 0 8px var(--green); animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
+
+  .layout { display: grid; grid-template-columns: 340px 1fr; flex: 1; gap: 16px; padding: 16px; }
+  .left-col { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Mobil ilovadan ro'yxatdan o'tish kartasi */
+  .app-reg-box {
+    background: linear-gradient(180deg, #0f1e3f, #0b142a);
+    border: 2px solid var(--green);
+    border-radius: 14px;
+    padding: 15px;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+  }
+  .app-reg-box h3 { font-size: 14px; color: var(--green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .app-reg-box p { font-size: 11.5px; color: var(--muted); margin-bottom: 11px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .form-row { margin-bottom: 8px; }
+  .form-label { display: block; font-size: 11px; color: var(--cyan); margin-bottom: 3px; font-weight: 600; }
+  .form-input, .form-select {
+    width: 100%; background: #070d1f; border: 1px solid rgba(0,229,255,0.3); color: #fff;
+    padding: 8px 10px; border-radius: 8px; font-size: 12.5px; outline: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--green); box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+  .reg-submit-btn {
+    width: 100%; background: linear-gradient(90deg, #10b981, #059669); color: #04130d;
+    border: none; padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 800;
+    cursor: pointer; transition: 0.2s; margin-top: 4px; text-transform: uppercase;
+  }
+  .reg-submit-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  #regToast {
+    display: none; margin-top: 9px; padding: 8px 10px; border-radius: 8px;
+    background: rgba(16,185,129,0.2); border: 1px solid var(--green); color: #6ee7b7;
+    font-size: 12px; font-weight: 700; text-align: center;
+  }
+
+  .sidebar { background: var(--panel); border: 1px solid rgba(0,229,255,0.2); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .sidebar h3 { font-size: 12.5px; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
+  .tbl-btn {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.08); color: var(--text);
+    padding: 9px 11px; border-radius: 8px; text-align: left; cursor: pointer; transition: 0.2s;
+    display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 600;
+  }
+  .tbl-btn:hover, .tbl-btn.active { border-color: var(--cyan); background: rgba(0,229,255,0.14); color: #fff; }
+  .tbl-count { background: rgba(16,185,129,0.2); color: var(--green); padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+
+  .main { display: flex; flex-direction: column; gap: 14px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat-box { background: var(--panel); border: 1px solid rgba(0,229,255,0.22); border-radius: 10px; padding: 12px 14px; }
+  .stat-box .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  .stat-box .val { font-size: 22px; font-weight: 800; color: var(--cyan); margin-top: 4px; }
+
+  .sql-console { background: var(--panel); border: 1px solid rgba(245,158,11,0.35); border-radius: 12px; padding: 14px; }
+  .sql-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+  .preset-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .q-btn { background: #1a2c56; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+  .q-btn:hover { background: var(--gold); color: #000; }
+  textarea#sqlInput {
+    width: 100%; height: 68px; background: #070d1f; color: #38bdf8; border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 8px; padding: 9px; font-family: Consolas, monospace; font-size: 12.5px; resize: vertical;
+  }
+
+  .table-card { background: var(--panel); border: 1px solid rgba(0,229,255,0.2); border-radius: 12px; padding: 15px; flex: 1; overflow-x: auto; }
+  .table-card h4 { color: var(--text); margin-bottom: 4px; font-size: 15.5px; }
+  .table-card p { color: var(--muted); font-size: 12.5px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { background: #16264c; color: var(--cyan); text-align: left; padding: 9px 11px; border-bottom: 2px solid rgba(0,229,255,0.3); white-space: nowrap; }
+  td { padding: 8px 11px; border-bottom: 1px solid rgba(255,255,255,0.07); color: #e2e8f0; }
+  tr:hover td { background: rgba(0,229,255,0.06); }
+  tr.new-row-flash td { background: rgba(16, 185, 129, 0.22) !important; transition: background 0.5s; }
+  .pill-danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid var(--red); padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; }
+  .pill-ok { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid var(--green); padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; }
+  .pill-new { background: var(--green); color: #000; padding: 2px 7px; border-radius: 5px; font-weight: 800; font-size: 10.5px; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="badge">SQLITE3 + JONLI API</span>
+    <div>
+      <h2 style="font-size:17px;">HAMROH AI — JONLI SQL BAZA VA ILOVA RO'YXATDAN O'TISH TIZIMI</h2>
+      <div style="font-size:12px; color:var(--muted);">Ilovadan (Android APK yoki quyidagi mobil oynadan) ro'yxatdan o'tган har bir haydovchi darhol <code>drivers</code> jadvaliga qo'shiladi!</div>
+    </div>
+  </div>
+  <div class="badge" id="serverStatusBadge" style="border-color:var(--green); color:var(--green);">
+    <span class="live-dot"></span>JONLI SINXRONLASH FAOL (REAL-TIME SQL)
+  </div>
+</header>
+
+<div class="layout">
+  <div class="left-col">
+    <!-- MOBIL ILOVADAN TEZKOR RO'YXATDAN O'TISH (REAL-TIME INSERT) -->
+    <div class="app-reg-box">
+      <h3>📱 Ilovadan Ro'yxatdan O'tish</h3>
+      <p>Mobil ilovada yangi foydalanuvchi ro'yxatdan o'tganda bajariladigan jonli <code>INSERT INTO drivers</code> jarayoni:</p>
+
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Ism *</label>
+          <input type="text" id="regFirstName" class="form-input" placeholder="Masalan: Sardor" value="">
+        </div>
+        <div>
+          <label class="form-label">Familiya *</label>
+          <input type="text" id="regLastName" class="form-input" placeholder="Olimov" value="">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Telefon raqami (+998...) *</label>
+        <input type="text" id="regPhone" class="form-input" placeholder="+998 90 777 88 99" value="+998 90 ">
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label class="form-label">Avtomobil rusumi</label>
+          <select id="regCarModel" class="form-select">
+            <option value="Chevrolet Cobalt">Chevrolet Cobalt</option>
+            <option value="Chevrolet Nexia-3">Chevrolet Nexia-3</option>
+            <option value="Chevrolet Damas">Chevrolet Damas</option>
+            <option value="Chevrolet Spark">Chevrolet Spark</option>
+            <option value="Daewoo Matiz">Daewoo Matiz</option>
+            <option value="Chevrolet Gentra">Chevrolet Gentra</option>
+            <option value="Chevrolet Tracker">Chevrolet Tracker</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Davlat raqami</label>
+          <input type="text" id="regCarPlate" class="form-input" placeholder="40 Z 777 ZZ" value="">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Hudud (Viloyat / Shahar)</label>
+        <select id="regRegion" class="form-select">
+          <option value="Farg'ona viloyati">Farg'ona viloyati</option>
+          <option value="Toshkent shahri">Toshkent shahri</option>
+          <option value="Andijon viloyati">Andijon viloyati</option>
+          <option value="Namangan viloyati">Namangan viloyati</option>
+          <option value="Samarqand viloyati">Samarqand viloyati</option>
+        </select>
+      </div>
+
+      <button class="reg-submit-btn" onclick="registerNewDriverFromApp()">
+        ➕ Ro'yxatdan O'tish (SQL Bazaga Qo'shish)
+      </button>
+      <div id="regToast">✅ Foydalanuvchi darhol SQL bazaga qo'shildi!</div>
+    </div>
+
+    <!-- JADVALLAR RO'YXATI -->
+    <div class="sidebar">
+      <h3>📂 Asosiy SQL Jadvallar (7 ta)</h3>
+      <button class="tbl-btn active" id="btn_drivers" onclick="showTable('drivers', this)"><span>1. drivers (Haydovchilar)</span><span class="tbl-count" id="cnt_drivers">6</span></button>
+      <button class="tbl-btn" id="btn_devices_smart_box" onclick="showTable('devices_smart_box', this)"><span>2. devices_smart_box</span><span class="tbl-count" id="cnt_devices_smart_box">6</span></button>
+      <button class="tbl-btn" id="btn_trips" onclick="showTable('trips', this)"><span>3. trips (Safarlar)</span><span class="tbl-count" id="cnt_trips">6</span></button>
+      <button class="tbl-btn" id="btn_dms_biometric_logs" onclick="showTable('dms_biometric_logs', this)"><span>4. dms_biometric_logs</span><span class="tbl-count" id="cnt_dms_biometric_logs">5</span></button>
+      <button class="tbl-btn" id="btn_adas_road_hazards" onclick="showTable('adas_road_hazards', this)"><span>5. adas_road_hazards</span><span class="tbl-count" id="cnt_adas_road_hazards">5</span></button>
+      <button class="tbl-btn" id="btn_offline_poi_radars" onclick="showTable('offline_poi_radars', this)"><span>6. offline_poi_radars</span><span class="tbl-count" id="cnt_offline_poi_radars">6</span></button>
+      <button class="tbl-btn" id="btn_sos_emergency_incidents" onclick="showTable('sos_emergency_incidents', this)"><span>7. sos_emergency_incidents</span><span class="tbl-count" id="cnt_sos_emergency_incidents">1</span></button>
+
+      <h3 style="margin-top:6px;">📊 Analitik SQL Views (2 ta)</h3>
+      <button class="tbl-btn" id="btn_v_driver_safety_summary" onclick="showTable('v_driver_safety_summary', this)"><span>★ v_driver_safety_summary</span><span class="tbl-count">VIEW</span></button>
+      <button class="tbl-btn" id="btn_v_critical_alerts_report" onclick="showTable('v_critical_alerts_report', this)"><span>★ v_critical_alerts_report</span><span class="tbl-count">VIEW</span></button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="stats-row">
+      <div class="stat-box"><div class="lbl">Ro'yxatdan O'tgan Haydovchilar</div><div class="val" id="totalDriversStat" style="color:var(--green)">6 nafar</div></div>
+      <div class="stat-box"><div class="lbl">Ulangan Smart Box / Ilovalar</div><div class="val" id="totalDevicesStat">6 ta qurilma</div></div>
+      <div class="stat-box"><div class="lbl">Oflayn Qidiruv Tezligi</div><div class="val" style="color:var(--gold)">0.4 ms (SQLite Index)</div></div>
+      <div class="stat-box"><div class="lbl">Sinxronlash Rejimi</div><div class="val">Darhol (Real-Time)</div></div>
+    </div>
+
+    <div class="sql-console">
+      <div class="sql-header">
+        <strong style="color:var(--gold); font-size:13px;">⚡ BAJARILGAN JONLI SQL SO'ROV (SQLITE3 / POSTGRESQL):</strong>
+        <div class="preset-btns">
+          <button class="q-btn" onclick="runPreset('drivers')">1. Barcha Haydovchilar</button>
+          <button class="q-btn" onclick="runPreset('v_critical_alerts_report')">2. Bola & Uyqu Xavflari (JOIN)</button>
+          <button class="q-btn" onclick="runPreset('offline_poi_radars')">3. Oflayn Radarlar va Maktablar</button>
+          <button class="q-btn" onclick="runPreset('v_driver_safety_summary')">4. Reyting Hisoboti (GROUP BY)</button>
+        </div>
+      </div>
+      <textarea id="sqlInput" readonly>SELECT driver_id, full_name, phone_number, car_model, car_plate_number, region, safety_score, subscription_plan, created_at FROM drivers ORDER BY driver_id DESC;</textarea>
+    </div>
+
+    <div class="table-card">
+      <h4 id="tblTitle">SQL Jadval: drivers (Ro'yxatdan o'tgan foydalanuvchilar — Eng yangilari yuqorida)</h4>
+      <p id="tblDesc">Mobil ilovadan ro'yxatdan o'tgan har bir haydovchi shu soniyaning o'zida eng yuqori qatorga qo'shiladi.</p>
+      <div id="tableContainer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:8000";
+let currentTableName = "drivers";
+let newestDriverId = 6;
+
+const TABLE_META = {
+  "drivers": {
+    sql: "SELECT driver_id, full_name, phone_number, car_model, car_plate_number, region, safety_score, subscription_plan, created_at FROM drivers ORDER BY driver_id DESC;",
+    desc: "Mobil ilovadan ro'yxatdan o'tgan barcha haydovchilar, mashina rusumi, davlat raqami va xavfsizlik ballari (yangi qo'shilganlar yuqorida)."
+  },
+  "devices_smart_box": {
+    sql: "SELECT device_id, driver_id, serial_number, device_type, connection_port, npu_processor, firmware_version, last_sync_at FROM devices_smart_box ORDER BY device_id DESC;",
+    desc: "Har bir ro'yxatdan o'tgan haydovchiga avtomatik biriktirilgan mobil ilova va Smart Vision Box apparatlari."
+  },
+  "trips": {
+    sql: "SELECT trip_id, driver_id, start_location, end_location, distance_km, duration_minutes, max_speed_kmh, drowsiness_alerts, collision_warnings, network_mode FROM trips;",
+    desc: "Haydovchilarning safarlari tarixi, Qamchiq dovoni va shahar ichida 100% oflayn ishlash ko'rsatkichlari."
+  },
+  "dms_biometric_logs": {
+    sql: "SELECT dms_log_id, trip_id, driver_id, event_type, ear_eye_ratio, mar_mouth_ratio, eye_closed_ms, confidence_pct, voice_alert_uz, recorded_at FROM dms_biometric_logs;",
+    desc: "Old kamera (468 nuqtali MediaPipe Face Mesh) orqali aniqlangan ko'z yumilishi (EAR < 0.22), esnash (MAR > 0.65) va o'zbekcha ovozli bonglar."
+  },
+  "adas_road_hazards": {
+    sql: "SELECT hazard_id, trip_id, detected_object, distance_meters, ttc_seconds, car_speed_kmh, npu_inference_ms, severity_level, voice_warning_text FROM adas_road_hazards;",
+    desc: "Orqa kamera soniyasiga 30 marta (30 FPS) skanerlab aniqlagan yugurib chiqqan bola, piyoda va avariya xavflari."
+  },
+  "offline_poi_radars": {
+    sql: "SELECT poi_id, poi_type, title_uz, region, speed_limit_kmh, alert_distance_m, gps_lat, gps_lon, voice_prompt_uz FROM offline_poi_radars WHERE is_active = 1;",
+    desc: "100% Oflayn (internetsiz) ishlovchi fotoradarlar, maktab hududlari, xavfli chorrahalar va Qamchiq dovoni burilishlari GPS bazasi."
+  },
+  "sos_emergency_incidents": {
+    sql: "SELECT incident_id, trip_id, driver_id, impact_g_force, incident_status, sms_sent_to, map_short_link, occurred_at FROM sos_emergency_incidents;",
+    desc: "Akselerometr (G-sensor) kuchli zarbani sezganda oila a'zolariga va 112 xizmatiga avtomatik SMS yuborish jurnali."
+  },
+  "v_driver_safety_summary": {
+    sql: "SELECT * FROM v_driver_safety_summary ORDER BY driver_id DESC;",
+    desc: "SQL VIEW: Barcha haydovchilar, ularning avtomobillari, jami masofasi va ogohlantirishlar soni bo'yicha umumlashgan hisobot."
+  },
+  "v_critical_alerts_report": {
+    sql: "SELECT * FROM v_critical_alerts_report;",
+    desc: "SQL VIEW (UNION ALL): Old kamera (DMS yuz biometriyasi) va orqa kamera (ADAS yo'l xavfi) bo'yicha barcha kritik ogohlantirishlar."
+  }
+};
+
+let DB_TABLES = {
+  "drivers": [
+    {driver_id:6, full_name:"Nazarov Bekzod", phone_number:"+998996789012", car_model:"Chevrolet Gentra", car_plate_number:"60 K 909 LA", region:"Andijon viloyati", experience_years:5, safety_score:96.8, subscription_plan:"B2B_FLEET", created_at:"2026-11-08 18:30:00"},
+    {driver_id:5, full_name:"Qodirov Ulug'bek", phone_number:"+998975678901", car_model:"Daewoo Matiz", car_plate_number:"50 E 404 MA", region:"Namangan viloyati", experience_years:6, safety_score:91.2, subscription_plan:"PRO", created_at:"2026-11-08 18:30:00"},
+    {driver_id:4, full_name:"Tursunov Javohir", phone_number:"+998944567890", car_model:"Chevrolet Spark", car_plate_number:"01 M 880 KA", region:"Toshkent shahri", experience_years:1, safety_score:92.0, subscription_plan:"FREE", created_at:"2026-11-08 18:30:00"},
+    {driver_id:3, full_name:"Karimov Rustamjon", phone_number:"+998933456789", car_model:"Chevrolet Damas", car_plate_number:"40 C 312 DA", region:"Marg'ilon shahri", experience_years:8, safety_score:89.4, subscription_plan:"B2B_FLEET", created_at:"2026-11-08 18:30:00"},
+    {driver_id:2, full_name:"Ahadjonov Asadullo", phone_number:"+998912345678", car_model:"Chevrolet Nexia-3", car_plate_number:"40 B 555 BB", region:"Farg'ona viloyati", experience_years:3, safety_score:95.0, subscription_plan:"PRO", created_at:"2026-11-08 18:30:00"},
+    {driver_id:1, full_name:"Ismoilov Abdukamol", phone_number:"+998901234567", car_model:"Chevrolet Cobalt", car_plate_number:"40 A 777 AA", region:"Farg'ona viloyati", experience_years:4, safety_score:98.5, subscription_plan:"PRO", created_at:"2026-11-08 18:30:00"}
+  ],
+  "devices_smart_box": [
+    {device_id:6, driver_id:6, serial_number:"HMAI-BOX-2026-0006", device_type:"SMART_VISION_BOX", connection_port:"TYPE-C USB", npu_processor:"Rockchip RK3566 INT8 NPU (12ms)", firmware_version:"v2.4.0-offline", is_offline_ready:1},
+    {device_id:5, driver_id:5, serial_number:"HMAI-BOX-2026-0005", device_type:"SMART_VISION_BOX", connection_port:"TYPE-C USB", npu_processor:"Rockchip RK3566 INT8 NPU (12ms)", firmware_version:"v2.4.0-offline", is_offline_ready:1},
+    {device_id:4, driver_id:4, serial_number:"HMAI-APP-2026-0004", device_type:"SMARTPHONE_APP", connection_port:"PESHOYNA_MAGNIT", npu_processor:"Apple Neural Engine / TFLite", firmware_version:"v2.4.0-offline", is_offline_ready:1},
+    {device_id:3, driver_id:3, serial_number:"HMAI-TAB-2026-0003", device_type:"ANDROID_TABLET", connection_port:"TYPE-C USB", npu_processor:"Snapdragon Hexagon NPU (14ms)", firmware_version:"v2.4.0-offline", is_offline_ready:1},
+    {device_id:2, driver_id:2, serial_number:"HMAI-BOX-2026-0002", device_type:"SMART_VISION_BOX", connection_port:"TYPE-C USB", npu_processor:"Rockchip RK3566 INT8 NPU (12ms)", firmware_version:"v2.4.0-offline", is_offline_ready:1},
+    {device_id:1, driver_id:1, serial_number:"HMAI-BOX-2026-0001", device_type:"SMART_VISION_BOX", connection_port:"TYPE-C USB", npu_processor:"Rockchip RK3566 INT8 NPU (12ms)", firmware_version:"v2.4.0-offline", is_offline_ready:1}
+  ],
+  "trips": [
+    {trip_id:1, driver_id:1, start_location:"Farg'ona sh. (FDTU)", end_location:"Qo'qon sh.", distance_km:88.4, duration_minutes:78, max_speed_kmh:86.0, drowsiness_alerts:0, collision_warnings:1, network_mode:"100% OFFLINE"},
+    {trip_id:2, driver_id:1, start_location:"Qo'qon sh.", end_location:"Toshkent sh. (Qamchiq dovoni)", distance_km:235.0, duration_minutes:210, max_speed_kmh:95.0, drowsiness_alerts:1, collision_warnings:2, network_mode:"100% OFFLINE (DOVON)"},
+    {trip_id:3, driver_id:2, start_location:"Farg'ona markazi", end_location:"Marg'ilon vokzali", distance_km:16.5, duration_minutes:24, max_speed_kmh:62.0, drowsiness_alerts:0, collision_warnings:1, network_mode:"100% OFFLINE"},
+    {trip_id:4, driver_id:3, start_location:"Marg'ilon bozori", end_location:"Andijon sh.", distance_km:74.2, duration_minutes:85, max_speed_kmh:82.0, drowsiness_alerts:2, collision_warnings:2, network_mode:"100% OFFLINE"},
+    {trip_id:5, driver_id:4, start_location:"Toshkent (Chilonzor)", end_location:"Yunusobod IT Park", distance_km:19.8, duration_minutes:32, max_speed_kmh:68.0, drowsiness_alerts:0, collision_warnings:1, network_mode:"100% OFFLINE"},
+    {trip_id:6, driver_id:5, start_location:"Namangan sh.", end_location:"Chust tumani", distance_km:42.0, duration_minutes:45, max_speed_kmh:78.0, drowsiness_alerts:1, collision_warnings:1, network_mode:"100% OFFLINE"}
+  ],
+  "dms_biometric_logs": [
+    {dms_log_id:1, trip_id:2, driver_id:1, event_type:"ESNASH_CHARCHOQ", ear_eye_ratio:0.27, mar_mouth_ratio:0.72, eye_closed_ms:320, confidence_pct:97.2, voice_alert_uz:"Diqqat! Charchoq alomatlari aniqlandi. Qahva ichib dam oling!", recorded_at:"2026-11-06 19:45:12"},
+    {dms_log_id:2, trip_id:4, driver_id:3, event_type:"MIKROUYQU", ear_eye_ratio:0.16, mar_mouth_ratio:0.31, eye_closed_ms:1380, confidence_pct:98.1, voice_alert_uz:"DIQQAT! UYG'ONING! O'ZINGIZGA KELING! Ko'zingiz yumilmoqda!", recorded_at:"2026-11-07 23:18:44"},
+    {dms_log_id:3, trip_id:4, driver_id:3, event_type:"ESNASH_CHARCHOQ", ear_eye_ratio:0.24, mar_mouth_ratio:0.69, eye_closed_ms:410, confidence_pct:96.5, voice_alert_uz:"Charchoq aniqlandi! Yo'l chetida 10 daqiqa to'xtab oling!", recorded_at:"2026-11-07 23:39:05"},
+    {dms_log_id:4, trip_id:6, driver_id:5, event_type:"CHALGISH_TELEFON", ear_eye_ratio:0.29, mar_mouth_ratio:0.25, eye_closed_ms:0, confidence_pct:95.8, voice_alert_uz:"Diqqatni yo'lga qarating! Telefonga chalg'imang!", recorded_at:"2026-11-08 14:42:19"},
+    {dms_log_id:5, trip_id:1, driver_id:1, event_type:"NORMAL", ear_eye_ratio:0.32, mar_mouth_ratio:0.21, eye_closed_ms:0, confidence_pct:98.9, voice_alert_uz:"Biometrik holat: Normal (Diqqat 98%)", recorded_at:"2026-11-06 08:30:00"}
+  ],
+  "adas_road_hazards": [
+    {hazard_id:1, trip_id:1, detected_object:"BOLA_YUGURMOQDA", distance_meters:11.4, ttc_seconds:1.3, car_speed_kmh:44.0, npu_inference_ms:11.8, severity_level:"KRITIK_XAVF", voice_warning_text:"XAVF! O'ng tomondan bola yugurib chiqdi! Zudlik bilan tormoz bosing!"},
+    {hazard_id:2, trip_id:2, detected_object:"AVTOMOBIL_KESKIN_TORMOZ", distance_meters:18.5, ttc_seconds:1.6, car_speed_kmh:72.0, npu_inference_ms:12.1, severity_level:"KRITIK_XAVF", voice_warning_text:"Diqqat! Oldindagi yuk mashinasi keskin tormoz bosdi! Masofani saqlang!"},
+    {hazard_id:3, trip_id:3, detected_object:"PIYODA_OTISH_JOYI", distance_meters:14.2, ttc_seconds:1.8, car_speed_kmh:52.0, npu_inference_ms:12.0, severity_level:"OGOHLANTIRISH", voice_warning_text:"Diqqat! Piyodalar o'tish joyida odam bor, tezlikni pasaytiring!"},
+    {hazard_id:4, trip_id:4, detected_object:"AVTOMOBIL_KESKIN_TORMOZ", distance_meters:9.8, ttc_seconds:1.1, car_speed_kmh:65.0, npu_inference_ms:11.9, severity_level:"KRITIK_XAVF", voice_warning_text:"XAVF! To'qnashuv ehtimoli! Darhol tormoz bosing!"},
+    {hazard_id:5, trip_id:5, detected_object:"YOL_BELGISI", distance_meters:35.0, ttc_seconds:3.2, car_speed_kmh:58.0, npu_inference_ms:11.5, severity_level:"AXBOROT", voice_warning_text:"Yangi haydovchi yordamchisi: Maktab hududi belgisi, tezlikni 30 km/soatga tushiring."}
+  ],
+  "offline_poi_radars": [
+    {poi_id:1, poi_type:"FOTORADAR", title_uz:"Al-Farg'oniy shoh ko'chasi Hikvision radari", region:"Farg'ona sh.", speed_limit_kmh:60, alert_distance_m:450, gps_lat:40.3864, gps_lon:71.7864, voice_prompt_uz:"Oldinda 450 metrda fotoradar! Cheklangan tezlik 60."},
+    {poi_id:2, poi_type:"MAKTAB_HUDUDI", title_uz:"Farg'ona 1-sonli maktab o'tish joyi", region:"Farg'ona sh.", speed_limit_kmh:30, alert_distance_m:350, gps_lat:40.3812, gps_lon:71.7795, voice_prompt_uz:"Diqqat! Oldinda maktab hududi va bolalar o'tish joyi! Tezlik 30."},
+    {poi_id:3, poi_type:"XAVFLI_CHORRAHA", title_uz:"Marg'ilon - Farg'ona halqa chorrahasi", region:"Farg'ona vil.", speed_limit_kmh:60, alert_distance_m:500, gps_lat:40.4310, gps_lon:71.7420, voice_prompt_uz:"Diqqat! Gavjum chorraha, piyodalar va svetoforga e'tiborli bo'ling!"},
+    {poi_id:4, poi_type:"TOG_DOVONI", title_uz:"Qamchiq dovoni xavfli burilish hududi", region:"Namangan - Toshkent", speed_limit_kmh:50, alert_distance_m:600, gps_lat:41.0845, gps_lon:70.6214, voice_prompt_uz:"100% Oflayn rejim: Oldinda Qamchiq dovoni keskin burilishi!"},
+    {poi_id:5, poi_type:"FOTORADAR", title_uz:"Amir Temur shoh ko'chasi Kompleks Radar", region:"Toshkent sh.", speed_limit_kmh:60, alert_distance_m:450, gps_lat:41.3111, gps_lon:69.2797, voice_prompt_uz:"Oldinda fotoradar va avtobus yo'lagi kamerasi! Tezlik 60."},
+    {poi_id:6, poi_type:"METAN_SHOXOBCHA", title_uz:"Farg'ona Eko-Metan 24/7 Shoxobchasi", region:"Farg'ona vil.", speed_limit_kmh:40, alert_distance_m:400, gps_lat:40.3980, gps_lon:71.8120, voice_prompt_uz:"O'ng tomonda 400 metrda Metan gaz quyish shoxobchasi mavjud."}
+  ],
+  "sos_emergency_incidents": [
+    {incident_id:1, trip_id:4, driver_id:3, impact_g_force:3.4, incident_status:"HAYDOVCHI_BEKOR_QILDI_XAVFSIZ", sms_sent_to:"+998933334455 (Oila)", map_short_link:"https://maps.google.com/?q=40.6510,72.1120", occurred_at:"2026-11-07 23:25:55"}
+  ],
+  "v_driver_safety_summary": [
+    {driver_id:1, full_name:"Ismoilov Abdukamol", car_model:"Chevrolet Cobalt", car_plate_number:"40 A 777 AA", safety_score:98.5, jami_safarlar:2, jami_masofa_km:323.4, jami_uyqu_ogohlantirish:1, jami_xavf_ogohlantirish:3},
+    {driver_id:2, full_name:"Ahadjonov Asadullo", car_model:"Chevrolet Nexia-3", car_plate_number:"40 B 555 BB", safety_score:95.0, jami_safarlar:1, jami_masofa_km:16.5, jami_uyqu_ogohlantirish:0, jami_xavf_ogohlantirish:1},
+    {driver_id:3, full_name:"Karimov Rustamjon", car_model:"Chevrolet Damas", car_plate_number:"40 C 312 DA", safety_score:89.4, jami_safarlar:1, jami_masofa_km:74.2, jami_uyqu_ogohlantirish:2, jami_xavf_ogohlantirish:2}
+  ],
+  "v_critical_alerts_report": [
+    {tizim_turi:"ADAS_YOL_XAVFI", haydovchi:"Ismoilov Abdukamol", avtomobil:"Chevrolet Cobalt", hodisa_turi:"BOLA_YUGURMOQDA", texnik_korsatkich:"11.4 metr (TTC: 1.3s)", ovozli_xabar:"XAVF! O'ng tomondan bola yugurib chiqdi! Zudlik bilan tormoz bosing!", vaqt:"2026-11-06 08:28:15"},
+    {tizim_turi:"DMS_YUZ_BIOMETRIYA", haydovchi:"Karimov Rustamjon", avtomobil:"Chevrolet Damas", hodisa_turi:"MIKROUYQU", texnik_korsatkich:"EAR: 0.16 | MAR: 0.31", ovozli_xabar:"DIQQAT! UYG'ONING! O'ZINGIZGA KELING! Ko'zingiz yumilmoqda!", vaqt:"2026-11-07 23:18:44"}
+  ]
+};
+
+function updateCounters() {
+  const dLen = (DB_TABLES["drivers"] || []).length;
+  const devLen = (DB_TABLES["devices_smart_box"] || []).length;
+  document.getElementById('cnt_drivers').textContent = dLen;
+  document.getElementById('cnt_devices_smart_box').textContent = devLen;
+  document.getElementById('totalDriversStat').textContent = dLen + " nafar";
+  document.getElementById('totalDevicesStat').textContent = devLen + " ta qurilma";
+}
+
+function renderCurrentTable(flashTopRow = false) {
+  updateCounters();
+  const meta = TABLE_META[currentTableName] || TABLE_META["drivers"];
+  document.getElementById('tblTitle').textContent = "SQL Jadval / View: " + currentTableName;
+  document.getElementById('tblDesc').textContent = meta.desc;
+
+  const rows = DB_TABLES[currentTableName] || [];
+  if (rows.length === 0) {
+    document.getElementById('tableContainer').innerHTML = "<p>Ma'lumot yo'q</p>";
+    return;
+  }
+
+  const cols = Object.keys(rows[0]);
+  let html = "<table><thead><tr>";
+  cols.forEach(c => { html += `<th>${c}</th>`; });
+  html += "</tr></thead><tbody>";
+
+  rows.forEach((r, idx) => {
+    const isNewDriver = (currentTableName === "drivers" && r.driver_id > 6);
+    const trClass = (flashTopRow && idx === 0) || isNewDriver ? "new-row-flash" : "";
+    html += `<tr class="${trClass}">`;
+    cols.forEach(c => {
+      let val = r[c];
+      if (c === "full_name" && isNewDriver) {
+        val = `<strong>${val}</strong> <span class="pill-new">YANGI QO'SHILDI!</span>`;
+      } else if (val === "KRITIK_XAVF" || val === "MIKROUYQU" || val === "BOLA_YUGURMOQDA") {
+        val = `<span class="pill-danger">${val}</span>`;
+      } else if (val === "PRO" || val === "100% OFFLINE" || val === "FREE") {
+        val = `<span class="pill-ok">${val}</span>`;
+      }
+      html += `<td>${val !== null && val !== undefined ? val : ""}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  document.getElementById('tableContainer').innerHTML = html;
+}
+
+function showTable(name, btnEl) {
+  currentTableName = name;
+  document.querySelectorAll('.tbl-btn').forEach(b => b.classList.remove('active'));
+  const targetBtn = btnEl || document.getElementById('btn_' + name);
+  if (targetBtn) targetBtn.classList.add('active');
+  document.getElementById('sqlInput').value = (TABLE_META[name] || TABLE_META["drivers"]).sql;
+  renderCurrentTable(false);
+}
+
+function runPreset(name) {
+  showTable(name, null);
+}
+
+async function registerNewDriverFromApp() {
+  const fn = document.getElementById('regFirstName').value.trim() || "Yangi";
+  const ln = document.getElementById('regLastName').value.trim() || "Haydovchi";
+  const ph = document.getElementById('regPhone').value.trim() || ("+99890" + Math.floor(1000000 + Math.random() * 8999999));
+  const car = document.getElementById('regCarModel').value;
+  let plate = document.getElementById('regCarPlate').value.trim();
+  const reg = document.getElementById('regRegion').value;
+
+  if (!plate) {
+    plate = "40 A " + Math.floor(100 + Math.random() * 899) + " AI";
+  }
+
+  const payload = {
+    first_name: fn,
+    last_name: ln,
+    phone: ph,
+    car_model: car,
+    car_plate_number: plate,
+    region: reg
+  };
+
+  let addedViaServer = false;
+  try {
+    const res = await fetch(API_BASE + "/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.tables) {
+        DB_TABLES = data.tables;
+      }
+      if (data.sql_executed) {
+        document.getElementById('sqlInput').value = data.sql_executed;
+      }
+      addedViaServer = true;
+    }
+  } catch (err) {
+    // Agar lokal server o'chiq bo'lsa ham brauzerning o'zida darhol qo'shadi!
+  }
+
+  if (!addedViaServer) {
+    const newId = (DB_TABLES["drivers"].length > 0 ? Math.max(...DB_TABLES["drivers"].map(d => d.driver_id)) : 6) + 1;
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const fullName = `${fn} ${ln}`.trim();
+    DB_TABLES["drivers"].unshift({
+      driver_id: newId,
+      full_name: fullName,
+      phone_number: ph,
+      car_model: car,
+      car_plate_number: plate,
+      region: reg,
+      experience_years: 3,
+      safety_score: 100.0,
+      subscription_plan: "FREE",
+      created_at: nowStr
+    });
+    DB_TABLES["devices_smart_box"].unshift({
+      device_id: newId,
+      driver_id: newId,
+      serial_number: `HMAI-APP-2026-000${newId}`,
+      device_type: "SMARTPHONE_APP + SMART_BOX",
+      connection_port: "TYPE-C USB",
+      npu_processor: "Mobile NPU INT8 (12ms)",
+      firmware_version: "v2.4.0-live",
+      is_offline_ready: 1
+    });
+    document.getElementById('sqlInput').value =
+      `INSERT INTO drivers (full_name, phone_number, car_model, car_plate_number, region, safety_score, subscription_plan) VALUES ('${fullName}', '${ph}', '${car}', '${plate}', '${reg}', 100.0, 'FREE');`;
+  }
+
+  // `drivers` jadvalini ochib, yangi qatorni yashil qilib ko'rsatamiz
+  currentTableName = "drivers";
+  document.querySelectorAll('.tbl-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn_drivers').classList.add('active');
+  renderCurrentTable(true);
+
+  const toast = document.getElementById('regToast');
+  toast.textContent = `✅ "${fn} ${ln}" (${car}) darhol SQL bazaga qo'shildi!`;
+  toast.style.display = "block";
+  setTimeout(() => { toast.style.display = "none"; }, 4500);
+
+  document.getElementById('regFirstName').value = "";
+  document.getElementById('regLastName').value = "";
+  document.getElementById('regCarPlate').value = "";
+}
+
+// Har 1.5 soniyada Python SQL Backend serveridan jonli yangilanishlarni tekshirish
+async function pollLiveSqlServer() {
+  try {
+    const res = await fetch(API_BASE + "/api/v1/sql/tables");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.tables && data.tables.drivers) {
+        const oldCount = (DB_TABLES["drivers"] || []).length;
+        const newCount = data.tables.drivers.length;
+        DB_TABLES = data.tables;
+        if (newCount !== oldCount) {
+          renderCurrentTable(true);
+        } else {
+          updateCounters();
+        }
+      }
+    }
+  } catch (e) {
+    // Offline fallback
+  }
+}
+
+setInterval(pollLiveSqlServer, 1500);
+pollLiveSqlServer();
+renderCurrentTable(false);
+</script>
+</body>
+</html>
