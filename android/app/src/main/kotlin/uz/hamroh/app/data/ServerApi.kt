@@ -31,6 +31,7 @@ class ServerApi(private val prefs: Prefs) {
     ): JSONObject {
         val candidates = buildList {
             if (prefs.serverUrl.isNotBlank()) add(prefs.serverUrl.trimEnd('/'))
+            add("http://172.27.4.106:8000")
             add("http://192.168.199.78:8000")
             add("http://10.0.2.2:8000")
             add("http://127.0.0.1:8000")

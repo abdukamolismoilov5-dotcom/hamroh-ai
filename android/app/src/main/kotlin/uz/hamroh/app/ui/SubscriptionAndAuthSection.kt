@@ -360,6 +360,7 @@ fun AuthSection(app: HamrohApp) {
     var email by remember { mutableStateOf(p.userEmail) }
     var password by remember { mutableStateOf(p.userPassword) }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showGoogleDialog by remember { mutableStateOf(false) }
 
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
@@ -654,39 +655,7 @@ fun AuthSection(app: HamrohApp) {
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color.White)
                     .clickable {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                runCatching {
-                                    app.db.registerDriver(
-                                        fullName = "Ali Valiyev (Google)",
-                                        phone = "+998 90 123 45 67",
-                                        carModel = "Chevrolet Cobalt",
-                                        carPlate = "40 A 777 AA",
-                                        region = "Farg'ona viloyati",
-                                        plan = "PRO_BEPUL",
-                                    )
-                                }
-                            }
-                            scope.launch(Dispatchers.IO) {
-                                runCatching {
-                                    app.api.googleAuth("ali.valiyev@gmail.com", "Ali Valiyev", "google_live_account_123")
-                                }
-                            }
-
-                            p.userName = "Ali"
-                            p.userSurname = "Valiyev"
-                            p.userEmail = "ali.valiyev@gmail.com"
-                            p.phone = "+998 90 123 45 67"
-                            p.loginType = "google"
-                            p.isLoggedIn = true
-                            isLoggedIn = true
-                            isError = false
-                            statusMessage = T(
-                                "✅ Google orqali tizimga kirdingiz va SQL bazaga saqlandi (ali.valiyev@gmail.com)!",
-                                "✅ Вход выполнен через Google (ali.valiyev@gmail.com)!",
-                                "✅ Logged in with Google (ali.valiyev@gmail.com)!"
-                            )
-                        }
+                        showGoogleDialog = true
                     }
                     .padding(vertical = 12.dp, horizontal = 16.dp),
                 contentAlignment = Alignment.Center
@@ -704,6 +673,50 @@ fun AuthSection(app: HamrohApp) {
                         color = Color(0xFF0F172A)
                     )
                 }
+            }
+
+            if (showGoogleDialog) {
+                GoogleAccountChooserDialog(
+                    defaultName = if (p.userName.isNotBlank() && p.userName != "Haydovchi") p.userName else "Ismoilov Abdukamol",
+                    defaultEmail = if (p.userEmail.isNotBlank()) p.userEmail else "abdukamolismoilov5@gmail.com",
+                    onDismiss = { showGoogleDialog = false },
+                    onSelect = { selectedName, selectedEmail ->
+                        showGoogleDialog = false
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                runCatching {
+                                    app.db.registerDriver(
+                                        fullName = "$selectedName (Google)",
+                                        phone = p.phone?.ifBlank { "+998 90 123 45 67" } ?: "+998 90 123 45 67",
+                                        carModel = "Chevrolet Cobalt",
+                                        carPlate = "40 A 777 AA",
+                                        region = "Farg'ona viloyati",
+                                        plan = "PRO_BEPUL",
+                                    )
+                                }
+                            }
+                            scope.launch(Dispatchers.IO) {
+                                runCatching {
+                                    app.api.googleAuth(selectedEmail, selectedName, "google_" + selectedEmail.hashCode())
+                                }
+                            }
+
+                            p.userName = selectedName
+                            p.userSurname = ""
+                            p.userEmail = selectedEmail
+                            if (p.phone.isNullOrBlank()) p.phone = "+998 90 123 45 67"
+                            p.loginType = "google"
+                            p.isLoggedIn = true
+                            isLoggedIn = true
+                            isError = false
+                            statusMessage = T(
+                                "✅ Google orqali tizimga kirdingiz va SQL bazaga saqlandi ($selectedEmail)!",
+                                "✅ Вход выполнен через Google ($selectedEmail)!",
+                                "✅ Logged in with Google ($selectedEmail)!"
+                            )
+                        }
+                    }
+                )
             }
         }
 

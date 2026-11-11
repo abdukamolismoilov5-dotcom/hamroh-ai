@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -38,6 +39,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -93,6 +95,7 @@ fun AuthStartupScreen(
     var email by remember { mutableStateOf(p.userEmail) }
     var password by remember { mutableStateOf(p.userPassword) }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showGoogleDialog by remember { mutableStateOf(false) }
 
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
@@ -474,34 +477,7 @@ fun AuthStartupScreen(
                         .background(Color(0xFF151924))
                         .border(1.dp, Color(0xFF2A3144), RoundedCornerShape(12.dp))
                         .clickable {
-                            scope.launch {
-                                withContext(Dispatchers.IO) {
-                                    runCatching {
-                                        app.db.registerDriver(
-                                            fullName = "Ali Valiyev (Google)",
-                                            phone = "+998 90 123 45 67",
-                                            carModel = "Chevrolet Cobalt",
-                                            carPlate = "40 A 777 AA",
-                                            region = "Farg'ona viloyati",
-                                            plan = "PRO_BEPUL",
-                                        )
-                                    }
-                                }
-                                scope.launch(Dispatchers.IO) {
-                                    runCatching {
-                                        app.api.googleAuth("ali.valiyev@gmail.com", "Ali Valiyev", "google_live_account_123")
-                                    }
-                                }
-
-                                p.userName = "Ali"
-                                p.userSurname = "Valiyev"
-                                p.userEmail = "ali.valiyev@gmail.com"
-                                p.phone = "+998 90 123 45 67"
-                                p.loginType = "google"
-                                p.isLoggedIn = true
-                                voice.play("drive_started", AlertLevel.VOICE) {}
-                                onProceed()
-                            }
+                            showGoogleDialog = true
                         }
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -514,6 +490,45 @@ fun AuthStartupScreen(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
+                    )
+                }
+
+                if (showGoogleDialog) {
+                    GoogleAccountChooserDialog(
+                        defaultName = if (p.userName.isNotBlank() && p.userName != "Haydovchi") p.userName else "Ismoilov Abdukamol",
+                        defaultEmail = if (p.userEmail.isNotBlank()) p.userEmail else "abdukamolismoilov5@gmail.com",
+                        onDismiss = { showGoogleDialog = false },
+                        onSelect = { selectedName, selectedEmail ->
+                            showGoogleDialog = false
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    runCatching {
+                                        app.db.registerDriver(
+                                            fullName = "$selectedName (Google)",
+                                            phone = p.phone?.ifBlank { "+998 90 123 45 67" } ?: "+998 90 123 45 67",
+                                            carModel = "Chevrolet Cobalt",
+                                            carPlate = "40 A 777 AA",
+                                            region = "Farg'ona viloyati",
+                                            plan = "PRO_BEPUL",
+                                        )
+                                    }
+                                }
+                                scope.launch(Dispatchers.IO) {
+                                    runCatching {
+                                        app.api.googleAuth(selectedEmail, selectedName, "google_" + selectedEmail.hashCode())
+                                    }
+                                }
+
+                                p.userName = selectedName
+                                p.userSurname = ""
+                                p.userEmail = selectedEmail
+                                if (p.phone.isNullOrBlank()) p.phone = "+998 90 123 45 67"
+                                p.loginType = "google"
+                                p.isLoggedIn = true
+                                voice.play("drive_started", AlertLevel.VOICE) {}
+                                onProceed()
+                            }
+                        }
                     )
                 }
 
@@ -663,4 +678,157 @@ fun GoogleVectorLogo() {
             strokeWidth = stroke
         )
     }
+}
+
+@Composable
+fun GoogleAccountChooserDialog(
+    defaultName: String = "Ismoilov Abdukamol",
+    defaultEmail: String = "abdukamolismoilov5@gmail.com",
+    onDismiss: () -> Unit,
+    onSelect: (name: String, email: String) -> Unit
+) {
+    var useCustom by remember { mutableStateOf(false) }
+    var customName by remember { mutableStateOf("") }
+    var customEmail by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1B202E),
+        titleContentColor = Color.White,
+        textContentColor = Color(0xFFE2E8F0),
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                GoogleVectorLogo()
+                Text(
+                    text = T("Google hisobini tanlang", "Выберите аккаунт Google", "Choose a Google account"),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = T(
+                        "Hamroh AI tizimiga ulanish uchun Google hisobingiz:",
+                        "Аккаунт Google для входа в Hamroh AI:",
+                        "Google account to sign in to Hamroh AI:"
+                    ),
+                    fontSize = 12.sp,
+                    color = Color(0xFF94A3B8)
+                )
+
+                if (!useCustom) {
+                    // Account card 1: Ismoilov Abdukamol (abdukamolismoilov5@gmail.com)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF252C3D))
+                            .border(1.dp, HColors.Accent, RoundedCornerShape(12.dp))
+                            .clickable {
+                                onSelect(defaultName, defaultEmail)
+                            }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(HColors.Accent),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = defaultName.take(1).uppercase(),
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = defaultName,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = defaultEmail,
+                                color = Color(0xFF94A3B8),
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    // Button: Boshqa hisob kiritish
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF141722))
+                            .border(1.dp, Color(0xFF333B4F), RoundedCornerShape(12.dp))
+                            .clickable { useCustom = true }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF2A3144)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("+", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = T("Boshqa Google hisob kiritish...", "Добавить другой аккаунт...", "Add another account..."),
+                            color = Color(0xFFE2E8F0),
+                            fontSize = 13.sp
+                        )
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = customName,
+                        onValueChange = { customName = it },
+                        label = { Text(T("Ism va familiya", "Имя и фамилия", "Full name")) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = customEmail,
+                        onValueChange = { customEmail = it },
+                        label = { Text(T("Google Gmail pochta", "Эл. почта Google (Gmail)", "Google Gmail address")) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Button(
+                        onClick = {
+                            val name = customName.trim().ifEmpty { "Google Foydalanuvchi" }
+                            val email = customEmail.trim().ifEmpty { "user@gmail.com" }
+                            onSelect(name, email)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = HColors.Accent, contentColor = Color.Black)
+                    ) {
+                        Text(T("Ushbu hisob bilan kirish", "Войти с этим аккаунтом", "Sign in with this account"), fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(T("Bekor qilish", "Отмена", "Cancel"), color = Color(0xFF94A3B8))
+            }
+        }
+    )
 }
