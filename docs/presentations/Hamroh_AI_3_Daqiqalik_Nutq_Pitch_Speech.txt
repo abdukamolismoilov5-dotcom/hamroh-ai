@@ -1,0 +1,47 @@
+HAMROH AI — INVESTORLAR OLDIDA 3 DAQIQALIK PITCH NUTQI (180 SONIYA)
+========================================================================
+
+0:00 — 0:45 | 1. KIRISH VA DOLZARB MUAMMO
+«Assalomu alaykum, hurmatli hakamlar hay’ati va qadrli investorlar!
+
+Tasavvur qiling: har yili O‘zbekiston yo‘llarida 10,000 dan ortiq og‘ir yo‘l-transport hodisasi sodir bo‘ladi va 2,200 dan ziyod yurtdoshimiz bevaqt hayotdan ko‘z yumadi. Eng fojialisi — bu avariyalarning 80 foizidan ortig‘iga bitta asosiy omil sabab bo‘lmoqda: haydovchining rulda toliqishi, ko‘zi bir-ikki soniyaga ilinib qolishi — ya’ni mikrouyqu hamda chalg‘ish!
+
+Bugun O‘zbekistonda 4 million 100 mingdan ortiq yengil avtomobil harakatlanmoqda. Shulardan 700 mingdan ziyodi Damas, 650 mingtasi Cobalt, 750 mingtasi Nexia. Va eng dahshatli statistika shuki — O‘zbekistondagi avtomobillarning 95.2 foizida hech qanday zamonaviy xavfsizlik datchigi, charchoq monitoringi yoki to‘qnashuvdan asrovchi ADAS tizimi UMUMAN YO‘Q!»
+
+------------------------------------------------------------------------
+0:45 — 1:30 | 2. YECHIM VA TEXNOLOGIK USTUNLIK
+«Biz bu muammoga milliy va o‘ta innovatsion yechim topdik — bu «Hamroh AI»!
+
+Hamroh AI — bu oddiy smartfon yoki avtomobil oynasiga 10 soniyada o‘rnatiluvchi 39 dollarlik «Smart Vision Box» apparati yordamida ishlovchi sun’iy intellektli faol kopilotdir.
+
+Tizim bir vaqtning o‘zida ikkita vazifani bajaradi:
+Birinchidan, 468 nuqtali 3D Face Mesh neyron tarmog‘i orqali haydovchining ko‘z yumilishini (EAR) soniyaning o‘ndan birida payqaydi va mikrouyqu boshlanishi bilan o‘zbek tilida: «Diqqat, ko‘zingizni oching!» deb darhol uyg‘otadi.
+Ikkinchidan, INT8 kvantlangan ADAS modeli orqali oldindagi piyodalar va mashinalargacha bo‘lgan to‘qnashuv vaqtini (TTC) hisoblab, xavf tug‘ilganda ogohlantiradi.
+
+Eng muhim jihati — tizim 100% OFLAYN ishlaydi! Qamchiq dovoni yoki cho‘llarda internet butunlay yo‘q bo‘lsa ham, barcha hisob-kitoblar bort chipida soniyasiga 30 kadr tezlikda bajariladi. Bizning loyiha qog‘ozda emas — to‘liq ishchi mobil ilovamiz va apparat MVP tayyor!»
+
+------------------------------------------------------------------------
+1:30 — 2:10 | 3. BOZOR VA RAQOBATCHILAR
+«Bizning bozorimiz ulkan: O‘zbekiston va Markaziy Osiyodagi umumiy bozor (TAM) 120 million dollardan oshadi. O‘zbekistonning o‘zida har kuni rulda yuradigan 1 million 800 mingta faol taksi, kuryer va yuk haydovchilari bor.
+
+Raqobatchilarga kelsak: Global lider Mobileye juda kuchli, lekin narxi 2,000 dan 5,000 dollargacha — bizning Cobalt yoki Damas egalari uni hech qachon sotib ololmaydi. Yandex Navigator esa faqat radarni aytadi, u haydovchining uxlab qolayotganini ko‘rmaydi. Video-registratorlar esa passiv yozadi, xolos.
+
+Hamroh AI — xorijiy tizimlardan 50 BAROBAR ARZON, 100 foiz oflayn va ona tilimizda gapiruvchi yagona milliy platformadir!»
+
+------------------------------------------------------------------------
+2:10 — 2:40 | 4. BIZNES MODEL VA JAMOA
+«Biznes modelimiz gibrid ko‘rinishda:
+B2C chakana haydovchilar uchun bepul ilova va oyiga 25,000 so‘mlik Premium obuna.
+B2B korporativ taksoparklar va yuk flotlariga 39 dollarlik Smart Box apparati sotiladi hamda har bir mashina uchun oyiga 5 dollarlik monitoring obunasi olinadi. Dasturiy ta’minotimizning yalpi marjasi 85-90 foizni tashkil etadi.
+
+Loyiha jamoamiz Farg‘ona davlat texnika universitetining iqtidorli muhandislaridan iborat: men — Ismoilov Abdukamol, AI va apparat arxitekturasi bo‘yicha mas’ulman; hammuassisimiz Ahadjonov Asadullo esa Android tizim va mobil telemetriya bo‘yicha yetakchi dasturchi. Barcha kodlar va neyron tarmoqlar o‘z qo‘llarimiz bilan 0 dan ishlab chiqilgan.»
+
+------------------------------------------------------------------------
+2:40 — 3:00 | 5. SARMOYA VA XULOSA
+«Bugun biz loyihani keng miqyosda bozorga olib chiqish, 50 ta avtomobilda to‘liq dala sinovlarini o‘tkazish va 10,000 ta ilk faol haydovchini jalb qilish uchun 7,000 AQSH dollari miqdorida sarmoya jalb qilmoqdamiz. Buning evaziga investorga kompaniyamizning 3.5 — 4.0 foiz ulushini taklif etamiz.
+
+«Hamroh AI» — bu shunchaki startap emas, bu har kuni o‘nlab insonlar hayotini asrab qoluvchi milliy missiyadir!
+
+«Har bir saqlab qolingan inson hayoti — bizning eng oliy maqsadimiz!»
+
+E’tiboringiz uchun katta rahmat, savollaringizga mamnuniyat bilan javob beraman!»
