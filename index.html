@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamroh AI — Milliy Sun'iy Intellektli Haydovchi Yordamchisi</title>
+  <meta name="description" content="Hamroh AI — 100% Oflayn Edge AI, MediaPipe 468 nuqtali biometriya va avtonom haydovchi xavfsizlik tizimi.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b19;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --border: rgba(56, 189, 248, 0.25);
+      --cyan: #00f2fe;
+      --blue: #4facfe;
+      --accent: #10b981;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 60%, rgba(79, 172, 254, 0.08) 0%, transparent 45%);
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(7, 11, 25, 0.85);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+    .logo span {
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: #070b19;
+      box-shadow: 0 4px 20px rgba(0, 242, 254, 0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 242, 254, 0.45);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--cyan);
+    }
+    .hero {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.15;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #00f2fe, #4facfe, #00c6ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--muted);
+      max-width: 780px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--cyan);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    .card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      margin-bottom: 0.75rem;
+      color: #fff;
+    }
+    .card p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .team-section {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+    .team-section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      margin-bottom: 2rem;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      text-align: left;
+    }
+    .team-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+    }
+    .team-card h4 {
+      font-size: 1.25rem;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+    .team-role {
+      color: var(--cyan);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="#" class="logo">
+        🛡️ <span>HAMROH AI</span>
+        <span class="badge">Edge AI & ADAS</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#xususiyatlar">Xususiyatlar</a>
+        <a href="#jamoa">Jamoa</a>
+        <a href="https://github.com/abdukamolismoilov5-dotcom/hamroh-ai" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div style="margin-bottom: 1.5rem;">
+        <span class="badge">🚀 100% Oflayn • Edge-AI • 30 FPS Real-time</span>
+      </div>
+      <h1>Milliy Sun'iy Intellektli<br><span>Haydovchi Yordamchisi</span></h1>
+      <p>
+        Hamroh AI — O'zbekiston yo'llarida YTHlarni kamaytirish uchun yaratilgan avtonom intellektual ekotizim. 
+        Internet talab qilmaydi, 468 nuqtali yuz biometriyasi orqali charchoqni va INT8 neyron tarmog'i orqali to'qnashuv xavfini real vaqtda aniqlaydi.
+      </p>
+      <div class="hero-actions">
+        <a href="https://github.com/abdukamolismoilov5-dotcom/hamroh-ai" target="_blank" class="btn btn-primary">
+          ⭐ GitHub Repozitoriy
+        </a>
+        <a href="docs/presentations/1_HamrohAI_Canva_Shablon_Taqdimot_7000$.pptx" class="btn btn-secondary">
+          📊 Taqdimotni Ko'rish (PPTX)
+        </a>
+      </div>
+    </section>
+
+    <section id="xususiyatlar" class="grid">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>100% Oflayn Edge AI</h3>
+        <p>Tog' dovonlari, cho'llar va internetsiz hududlarda to'liq avtonom ishlaydi. Barcha hisob-kitoblar bort mikrosxemasi (NPU) yoki telefonda bajariladi.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👁️</div>
+        <h3>468 Nuqtali Face Mesh</h3>
+        <p>MediaPipe 468 3D koordinatali yuz to'ri orqali ko'z yumilishi (EAR), mikrouyqu, esnash va chalg'ishni 0.3 soniyada aniqlaydi.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚗</div>
+        <h3>INT8 ADAS & TTC Modeli</h3>
+        <p>Oldindagi mashinalar, piyodalar va velosipedchilarni aniqlash, masofani baholash va to'qnashuvgacha qolgan vaqtni (TTC) hisoblash.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗣️</div>
+        <h3>O'zbekcha Ovozli Ogohlantirish</h3>
+        <p>Xavf yuzaga kelganda darhol ona tilimizda aniq va ta'sirchan ogohlantirish beradi: «Diqqat, ko'zingizni oching!», «Masofani saqlang!».</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <h3>Gibrid Ekotizim: Ilova + Smart Box</h3>
+        <p>Barcha smartfonlar uchun bepul Android mobil ilova hamda avtoparklar uchun $39 qiymatidagi ixcham Smart Vision Box apparati.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3>Lokal SQLite & Maxfiylik</h3>
+        <p>Barcha hodisalar va telemetriya qurilmaning ichki SQLite3 ma'lumotlar bazasida shifrlangan holda saqlanadi, shaxsiy video hech qayerga chiqmaydi.</p>
+      </div>
+    </section>
+
+    <section id="jamoa" class="team-section">
+      <h2>Loyiha Jamoasi</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <h4>Ismoilov Abdukamol</h4>
+          <div class="team-role">Founder & Lead AI / Backend Developer</div>
+          <p>Farg'ona davlat texnika universiteti (FDTU). Computer Vision, MediaPipe, TFLite, Python FastAPI va apparat ta'minoti muhandisi.</p>
+        </div>
+        <div class="team-card">
+          <h4>Ahadjonov Asadullo</h4>
+          <div class="team-role">Co-Founder & Senior Mobile Developer</div>
+          <p>Farg'ona davlat texnika universiteti (FDTU). Android Jetpack Compose, CameraX, sensor telemetriyasi va mobil arxitektura bo'yicha mas'ul.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Hamroh AI. Barcha huquqlar himoyalangan. Farg'ona davlat texnika universiteti (FDTU).</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">Open Source Repository: <a href="https://github.com/abdukamolismoilov5-dotcom/hamroh-ai" style="color: var(--cyan);">github.com/abdukamolismoilov5-dotcom/hamroh-ai</a></p>
+  </footer>
+
+</body>
+</html>
