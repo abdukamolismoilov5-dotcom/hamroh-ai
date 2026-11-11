@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060913"/>
+      <stop offset="50%" stop-color="#0B1226"/>
+      <stop offset="100%" stop-color="#04060E"/>
+    </linearGradient>
+
+    <!-- Radial Glow Behind Shield -->
+    <radialGradient id="centerGlow" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.22"/>
+      <stop offset="50%" stop-color="#4FACFE" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#060913" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Cyan Electric Gradient -->
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38E1FF"/>
+      <stop offset="50%" stop-color="#00C4FF"/>
+      <stop offset="100%" stop-color="#0072FF"/>
+    </linearGradient>
+
+    <!-- Emerald / Safety Accent Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F5A0"/>
+      <stop offset="100%" stop-color="#00D9F5"/>
+    </linearGradient>
+
+    <!-- Road Perspective Gradient -->
+    <linearGradient id="roadGrad" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#00F2FE" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#00F2FE" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Shield Metallic Gradient -->
+    <linearGradient id="shieldGrad" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#56CCF2"/>
+      <stop offset="35%" stop-color="#2F80ED"/>
+      <stop offset="100%" stop-color="#1A3B8B"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle App Icon Container -->
+  <rect x="24" y="24" width="976" height="976" rx="228" ry="228" fill="url(#bgGrad)"/>
+  <rect x="24" y="24" width="976" height="976" rx="228" ry="228" fill="url(#centerGlow)"/>
+  
+  <!-- Subtle border around squircle -->
+  <rect x="24" y="24" width="976" height="976" rx="228" ry="228" fill="none" stroke="#00F2FE" stroke-opacity="0.25" stroke-width="4"/>
+
+  <!-- Geometric Tech Circular Radar Grid -->
+  <circle cx="512" cy="490" r="320" fill="none" stroke="#00F2FE" stroke-opacity="0.08" stroke-width="2" stroke-dasharray="8 8"/>
+  <circle cx="512" cy="490" r="230" fill="none" stroke="#00F2FE" stroke-opacity="0.12" stroke-width="2"/>
+
+  <!-- ==================== MAIN EMBLEM ==================== -->
+  <g filter="url(#softGlow)">
+    
+    <!-- Outer Kinetic Shield Wings (Left & Right) -->
+    <!-- Left Wing -->
+    <path d="M 280, 310
+             C 340, 290 430, 270 512, 270
+             C 512, 270 512, 330 512, 330
+             C 450, 330 370, 350 326, 370
+             C 320, 480 350, 600 512, 720
+             C 512, 720 512, 775 512, 775
+             C 290, 640 260, 470 280, 310 Z"
+          fill="url(#cyanGrad)" fill-opacity="0.95"/>
+
+    <!-- Right Wing -->
+    <path d="M 744, 310
+             C 684, 290 594, 270 512, 270
+             C 512, 270 512, 330 512, 330
+             C 574, 330 654, 350 698, 370
+             C 704, 480 674, 600 512, 720
+             C 512, 720 512, 775 512, 775
+             C 734, 640 764, 470 744, 310 Z"
+          fill="url(#cyanGrad)" fill-opacity="0.95"/>
+
+    <!-- Inner Floating Shield Core -->
+    <path d="M 512, 355
+             C 570, 355 630, 372 654, 386
+             C 660, 470 635, 560 512, 650
+             C 389, 560 364, 470 370, 386
+             C 394, 372 454, 355 512, 355 Z"
+          fill="#080E1E" stroke="url(#cyanGrad)" stroke-width="6"/>
+
+    <!-- Converging Perspective Road (The Autonomous Path) -->
+    <polygon points="512,450 430,640 458,640 512,475 566,640 594,640"
+             fill="url(#roadGrad)"/>
+    
+    <!-- Road Dashed Center Guidance Line -->
+    <line x1="512" y1="465" x2="512" y2="510" stroke="#00F5A0" stroke-width="6" stroke-linecap="round"/>
+    <line x1="512" y1="535" x2="512" y2="590" stroke="#00F5A0" stroke-width="8" stroke-linecap="round"/>
+    <line x1="512" y1="615" x2="512" y2="640" stroke="#00F5A0" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Central AI Iris / Horizon Lens Core -->
+    <circle cx="512" cy="450" r="42" fill="#060C1B" stroke="url(#emeraldGrad)" stroke-width="6"/>
+    <circle cx="512" cy="450" r="22" fill="url(#emeraldGrad)"/>
+    <circle cx="512" cy="450" r="9" fill="#FFFFFF"/>
+
+    <!-- Biometric Radar Arcs (MediaPipe / Computer Vision) -->
+    <path d="M 460, 420 A 70 70 0 0 1 564, 420" fill="none" stroke="#00F2FE" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 440, 395 A 105 105 0 0 1 584, 395" fill="none" stroke="#00F2FE" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 14"/>
+
+    <!-- Top Crown Safety Star / Precision Diamond -->
+    <polygon points="512,230 522,254 546,254 526,268 534,292 512,278 490,292 498,268 478,254 502,254" 
+             fill="#00F5A0" filter="url(#softGlow)"/>
+
+  </g>
+</svg>
