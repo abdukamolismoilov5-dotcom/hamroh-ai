@@ -214,7 +214,7 @@ fun AuthStartupScreen(
             Spacer(Modifier.height(10.dp))
 
             Text(
-                text = "HAMROH AI",
+                text = "SAFEDRIVE AI",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
@@ -717,9 +717,9 @@ fun GoogleAccountChooserDialog(
             ) {
                 Text(
                     text = T(
-                        "Hamroh AI tizimiga ulanish uchun Google hisobingiz:",
-                        "Аккаунт Google для входа в Hamroh AI:",
-                        "Google account to sign in to Hamroh AI:"
+                        "SafeDrive AI tizimiga ulanish uchun Google hisobingiz:",
+                        "Аккаунт Google для входа в SafeDrive AI:",
+                        "Google account to sign in to SafeDrive AI:"
                     ),
                     fontSize = 12.sp,
                     color = Color(0xFF94A3B8)

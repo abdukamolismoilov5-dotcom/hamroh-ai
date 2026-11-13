@@ -469,6 +469,29 @@ def create_app(s: Settings | None = None, sms: SmsSender | None = None, messenge
         return {"pois": [{"id": f"crowd-{r['id']}", "type": "SPEED_CAMERA", "lat": r["lat"], "lon": r["lon"]} for r in rows],
                 "server_time": int(time.time())}
 
+    @app.get("/api/v1/radars")
+    def get_radars(lat: float | None = None, lon: float | None = None, radius_km: float = 100.0, limit: int = 500):
+        """O'zbekiston bo'yicha barcha statsionar va fotoradarlar ro'yxati (GPS va masofa bilan)."""
+        rows = db.query("SELECT id,type,lat,lon,severity as speed_limit,reports,confirmed,updated_at FROM crowd_points "
+                        "WHERE type IN ('report_camera','SPEED_CAMERA') ORDER BY id LIMIT ?", (limit,))
+        items = []
+        for r in rows:
+            d = dict(r)
+            if lat is not None and lon is not None:
+                d["distance_m"] = round(haversine_m(lat, lon, r["lat"], r["lon"]), 1)
+                if d["distance_m"] > radius_km * 1000:
+                    continue
+            items.append(d)
+        if lat is not None and lon is not None:
+            items.sort(key=lambda x: x.get("distance_m", 0))
+        return {
+            "radars": items,
+            "total": len(items),
+            "server_time": int(time.time()),
+            "status": "online",
+            "provider": "SafeDrive AI National Radar Network"
+        }
+
     # --- metan (FR-3.5) ---
     @app.put("/api/v1/gas/{station_id}/status")
     def gas_put(station_id: str, body: GasStatusIn, uid: str = Depends(current_user)):

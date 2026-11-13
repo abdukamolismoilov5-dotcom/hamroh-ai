@@ -53,8 +53,16 @@ class Prefs(context: Context) {
         get() = sp.getBoolean("shadow_off", true)
         set(v) = put { putBoolean("shadow_off", v) }
     var serverUrl: String
-        get() = str("server", BuildConfig.SERVER_URL).ifEmpty { "http://10.150.233.172:8000" }
+        get() = str("server", BuildConfig.SERVER_URL).ifEmpty { "http://10.18.212.172:8000" }
         set(v) = put { putString("server", v.trimEnd('/')) }
+    /** "dark" (Tun) yoki "light" (Kun) */
+    var themeMode: String
+        get() = str("theme_mode", "dark")
+        set(v) = put { putString("theme_mode", v) }
+    /** "yandex" yoki "osm" */
+    var mapTileSource: String
+        get() = str("map_source", "yandex")
+        set(v) = put { putString("map_source", v) }
     var authToken: String?
         get() = sp.getString("token", null)
         set(v) = put { putString("token", v) }

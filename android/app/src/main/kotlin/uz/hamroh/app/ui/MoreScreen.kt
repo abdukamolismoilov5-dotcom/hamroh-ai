@@ -204,7 +204,7 @@ private fun shareScoreCard(ctx: Context, score: Int, s: WeekStats) {
     val c = android.graphics.Canvas(bmp)
     c.drawColor(android.graphics.Color.rgb(5, 5, 8))
     val p = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.WHITE; typeface = Typeface.DEFAULT_BOLD }
-    p.textSize = 64f; c.drawText("Hamroh AI", 80f, 160f, p)
+    p.textSize = 64f; c.drawText("SafeDrive AI", 80f, 160f, p)
     p.textSize = 42f; p.typeface = Typeface.DEFAULT; p.color = android.graphics.Color.rgb(148, 163, 184)
     c.drawText(T("Haftalik xavfsiz haydash bahosi", "Оценка безопасного вождения за неделю", "Weekly safe-driving score"), 80f, 240f, p)
     p.textSize = 360f; p.typeface = Typeface.DEFAULT_BOLD; p.color = android.graphics.Color.rgb(56, 189, 248)
@@ -216,7 +216,7 @@ private fun shareScoreCard(ctx: Context, score: Int, s: WeekStats) {
     p.color = android.graphics.Color.rgb(242, 194, 48); p.textSize = 40f
     c.drawText(T("Yo'lda bolalarni asraylik", "Берегите детей на дорогах", "Keep children safe on the road"), 80f, 1240f, p)
     val dir = File(ctx.cacheDir, "share").apply { mkdirs() }
-    val f = File(dir, "hamroh_score.png")
+    val f = File(dir, "safedrive_score.png")
     f.outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.files", f)
     ctx.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("image/png").putExtra(Intent.EXTRA_STREAM, uri)

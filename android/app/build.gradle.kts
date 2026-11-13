@@ -31,11 +31,17 @@ android {
     signingConfigs {
         create("owner") {
             val ks = prop("HAMROH_KEYSTORE")
+            val defaultKs = file("../keystore/safedrive-release.jks")
             if (ks.isNotEmpty()) {
                 storeFile = file(ks)
                 storePassword = prop("HAMROH_KEYSTORE_PASSWORD")
                 keyAlias = prop("HAMROH_KEY_ALIAS")
                 keyPassword = prop("HAMROH_KEY_PASSWORD")
+            } else if (defaultKs.exists()) {
+                storeFile = defaultKs
+                storePassword = "SafeDrive2026AI!"
+                keyAlias = "safedrive"
+                keyPassword = "SafeDrive2026AI!"
             }
         }
     }
@@ -43,7 +49,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            if (prop("HAMROH_KEYSTORE").isNotEmpty()) signingConfig = signingConfigs.getByName("owner")
+            signingConfig = signingConfigs.getByName("owner")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {

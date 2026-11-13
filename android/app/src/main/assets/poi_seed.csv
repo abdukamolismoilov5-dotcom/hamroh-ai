@@ -1,0 +1,112 @@
+# Hamroh / SafeDrive AI O'zbekiston Radarlar va POI Bazasining Rasmiy Seed Fayli
+# id,TYPE,lat,lon,speed_limit,name
+uz-cam-001,SPEED_CAMERA,41.317500,69.281000,60,Amir Temur / Navoiy chorrahasi fotoradari
+uz-cam-002,SPEED_CAMERA,41.328400,69.284200,60,Amir Temur / A.Qodiriy chorrahasi radari
+uz-cam-003,SPEED_CAMERA,41.353700,69.289100,70,Amir Temur / Shahriston chorrahasi radari
+uz-cam-004,SPEED_CAMERA,41.378900,69.297400,70,Amir Temur / TKAD halqa chiqish radari
+uz-cam-005,SPEED_CAMERA,41.284100,69.227300,70,Bunyodkor / Muqimiy ko'prigi radari
+uz-cam-006,SPEED_CAMERA,41.272500,69.205200,70,Bunyodkor / Chilonzor metro fotoradari
+uz-cam-007,SPEED_CAMERA,41.229100,69.148200,70,Bunyodkor / Erkin YPX maskani radari
+uz-cam-008,SPEED_CAMERA,41.319800,69.295400,60,Mustaqillik shox ko'chasi (Pushkin metro)
+uz-cam-009,SPEED_CAMERA,41.325500,69.314200,60,Mustaqillik / Parkent ko'chasi radari
+uz-cam-010,SPEED_CAMERA,41.341100,69.338500,70,Mirzo Ulug'bek shox ko'chasi (Akademgorodok)
+uz-cam-011,SPEED_CAMERA,41.298200,69.290500,70,KHAY Shimoliy Vokzal ko'prigi radari
+uz-cam-012,SPEED_CAMERA,41.316800,69.220100,70,KHAY / Samarqand Darvoza chorrahasi
+uz-cam-013,SPEED_CAMERA,41.340200,69.224500,60,KHAY / Chig'atoy fotoradari
+uz-cam-014,SPEED_CAMERA,41.336400,69.261200,70,KHAY / Labzak ko'chasi radari
+uz-cam-015,SPEED_CAMERA,41.331200,69.251400,60,Sebzor tunneli kirish fotoradari
+uz-cam-016,SPEED_CAMERA,41.337100,69.215500,60,Beruniy shox ko'chasi (Tinchlik metro)
+uz-cam-017,SPEED_CAMERA,41.345200,69.206100,60,Beruniy shox ko'chasi (O'zko'rgazmasavdo)
+uz-cam-018,SPEED_CAMERA,41.288200,69.254100,60,Shota Rustaveli / Askiya chorrahasi
+uz-cam-019,SPEED_CAMERA,41.275500,69.243200,60,Shota Rustaveli / Janubiy vokzal ko'prigi
+uz-cam-020,SPEED_CAMERA,41.268200,69.261000,60,Bobur ko'chasi / Aeroport ko'prigi radari
+uz-cam-021,SPEED_CAMERA,41.299100,69.274100,60,Nukus ko'chasi / Rossiya elchixonasi
+uz-cam-022,SPEED_CAMERA,41.242200,69.338100,70,Farg'ona Yo'li / Qo'yliq bozori fotoradari
+uz-cam-023,SPEED_CAMERA,41.275100,69.309200,70,Farg'ona Yo'li / Risoviy ko'prigi radari
+uz-cam-024,SPEED_CAMERA,41.339200,69.387100,80,Yangi O'zbekiston shox ko'chasi (1-radar)
+uz-cam-025,SPEED_CAMERA,41.345100,69.421000,80,Yangi O'zbekiston / Yangi O'zbekiston Bog'i
+uz-cam-026,SPEED_CAMERA,41.228500,69.214100,70,Yangi Sergeli yo'li / Avtomobil bozori
+uz-cam-027,SPEED_CAMERA,41.209100,69.201200,70,Yangi Sergeli / Qipchoq ko'chasi radari
+uz-cam-028,SPEED_CAMERA,41.312000,69.255000,60,Navoiy shox ko'chasi / Panorama kino
+uz-cam-029,SPEED_CAMERA,41.305100,69.241200,60,O'zbekiston shox ko'chasi / Xalqlar do'stligi
+uz-cam-030,SPEED_CAMERA,41.291200,69.208500,60,Katta Chilonzor ko'chasi fotoradari
+uz-cam-031,SPEED_CAMERA,41.215200,69.298100,80,THAY Katta halqa yo'li (Bek-baraka bozori)
+uz-cam-032,SPEED_CAMERA,41.238500,69.182400,70,THAY Katta halqa yo'li (O'rikzor bozori)
+uz-cam-033,SPEED_CAMERA,41.365100,69.345200,70,THAY Toshkent Traktor Zavodi ko'prigi
+uz-cam-034,SPEED_CAMERA,41.385200,69.261200,70,THAY Uch Qahramon posti radari
+uz-cam-035,SPEED_CAMERA,41.121500,69.052100,70,M39 Yangiyo'l aylanma yo'li statsionar radari
+uz-cam-036,SPEED_CAMERA,40.941200,68.752100,70,M39 Chinoz Sirdaryo ko'prigi radari
+uz-cam-037,SPEED_CAMERA,40.386400,71.785200,60,Farg'ona sh.  Al-Farg'oniy shox ko'chasi radari
+uz-cam-038,SPEED_CAMERA,40.389200,71.776100,60,Farg'ona sh.  B.Marg'iloniy ko'chasi fotoradari
+uz-cam-039,SPEED_CAMERA,40.379100,71.794200,50,Farg'ona sh.  FDTU universiteti oldi fotoradari
+uz-cam-040,SPEED_CAMERA,40.368100,71.801500,60,Farg'ona sh.  Quvasoy ko'chasi radari
+uz-cam-041,SPEED_CAMERA,40.421500,71.745100,70,Farg'ona – Marg'ilon shox yo'li radari
+uz-cam-042,SPEED_CAMERA,40.471200,71.714200,60,Marg'ilon sh.  B.Naqshbandiy ko'chasi fotoradari
+uz-cam-043,SPEED_CAMERA,40.482100,71.728500,60,Marg'ilon sh.  Ipakchilar ko'chasi radari
+uz-cam-044,SPEED_CAMERA,40.521400,71.795100,70,Toshloq aylanma yo'li fotoradari
+uz-cam-045,SPEED_CAMERA,40.531200,70.938200,60,Qo'qon sh.  Turon ko'chasi radari
+uz-cam-046,SPEED_CAMERA,40.525100,70.945100,60,Qo'qon sh.  A.Navoiy ko'chasi fotoradari
+uz-cam-047,SPEED_CAMERA,40.548200,70.912500,70,Qo'qon kirish A373 magistrali radari
+uz-cam-048,SPEED_CAMERA,40.345200,71.121500,70,Rishton shox ko'chasi fotoradari
+uz-cam-049,SPEED_CAMERA,40.782100,72.345100,60,Andijon sh.  Bobur shox ko'chasi radari
+uz-cam-050,SPEED_CAMERA,40.771200,72.358200,60,Andijon sh.  Mashrab ko'chasi fotoradari
+uz-cam-051,SPEED_CAMERA,40.701200,72.291500,70,Andijon – Asaka trassasi (GM zavod yo'li)
+uz-cam-052,SPEED_CAMERA,40.641500,72.241200,60,Asaka sh.  Bobur ko'chasi radari
+uz-cam-053,SPEED_CAMERA,40.712500,72.052100,70,Shahrixon aylanma yo'li radari
+uz-cam-054,SPEED_CAMERA,41.001200,71.685200,60,Namangan sh.  Uychi ko'chasi radari
+uz-cam-055,SPEED_CAMERA,40.995100,71.662100,60,Namangan sh.  Navoiy ko'chasi fotoradari
+uz-cam-056,SPEED_CAMERA,41.021500,71.452100,70,Namangan – Chust trassasi radari
+uz-cam-057,SPEED_CAMERA,41.015200,70.082100,60,Angren shahri kirish fotoradari (A373)
+uz-cam-058,SPEED_CAMERA,41.031200,70.152100,70,Angren shakar zavodi yo'li radari (A373)
+uz-cam-059,SPEED_CAMERA,41.152100,70.521400,50,Qamchiq dovoni Rezak posti radari (A373)
+uz-cam-060,SPEED_CAMERA,41.192500,70.612500,50,Qamchiq dovoni Tunnel oldi fotoradari (A373)
+uz-cam-061,SPEED_CAMERA,41.141200,70.785200,60,Qamchiq dovoni sharqiy tushish radari (A373)
+uz-cam-062,SPEED_CAMERA,41.012500,71.052100,70,Pop tumaniga tushish radari (A373)
+uz-cam-063,SPEED_CAMERA,40.712500,68.685200,70,M39 Sirdaryo Baxt shahri fotoradari
+uz-cam-064,SPEED_CAMERA,40.495100,68.785200,70,M39 Guliston aylanma yo'li radari
+uz-cam-065,SPEED_CAMERA,40.125100,67.845100,70,M39 Jizzax shahri kirish radari
+uz-cam-066,SPEED_CAMERA,40.082100,67.751200,70,M39 Jizzax Sangzor daryosi ko'prigi
+uz-cam-067,SPEED_CAMERA,39.752100,67.275100,70,M39 Bulung'ur posti statsionar radari
+uz-cam-068,SPEED_CAMERA,39.654200,66.975200,50,Samarqand sh.  Registon maydoni atrofi radari
+uz-cam-069,SPEED_CAMERA,39.661200,66.952100,60,Samarqand sh.  Mirzo Ulug'bek shox ko'chasi
+uz-cam-070,SPEED_CAMERA,39.678200,66.921400,60,Samarqand sh.  Rudakiy ko'chasi (Vokzal)
+uz-cam-071,SPEED_CAMERA,39.645100,66.938200,60,Samarqand sh.  Gagarin ko'chasi radari
+uz-cam-072,SPEED_CAMERA,39.901200,66.251200,70,M37 Kattaqo'rg'on aylanma yo'li radari
+uz-cam-073,SPEED_CAMERA,40.095100,65.375200,70,M37 Navoiy shahri kirish fotoradari
+uz-cam-074,SPEED_CAMERA,40.098200,64.675100,70,M37 Buxoro G'ijduvon aylanma radari
+uz-cam-075,SPEED_CAMERA,39.775100,64.425100,60,Buxoro sh.  B.Naqshbandiy ko'chasi fotoradari
+uz-cam-076,SPEED_CAMERA,39.768200,64.441200,60,Buxoro sh.  Ibrohim Mo'minov ko'chasi
+uz-cam-077,SPEED_CAMERA,38.852100,65.795100,70,M39 Qashqadaryo Qarshi kirish radari
+uz-cam-078,SPEED_CAMERA,37.235100,67.275100,70,M39 Surxondaryo Termiz kirish radari
+uz-sch-101,SCHOOL,41.318200,69.282500,30,1-sonli ixtisoslashtirilgan maktab (Toshkent)
+uz-sch-102,SCHOOL,41.332500,69.289100,30,60-sonli nemis tili maktabi (Toshkent)
+uz-sch-103,SCHOOL,41.285400,69.224100,30,178-sonli umumta'lim maktabi (Chilonzor)
+uz-sch-104,SCHOOL,41.339100,69.217200,30,24-sonli maktab (Beruniy ko'chasi)
+uz-sch-105,SCHOOL,41.291500,69.256200,30,110-sonli maktab (Shota Rustaveli)
+uz-sch-106,SCHOOL,40.381200,71.791500,30,2-sonli maktab (Farg'ona sh.  FDTU yaqini)
+uz-sch-107,SCHOOL,40.388500,71.778200,30,8-sonli maktab (Farg'ona markaz)
+uz-sch-108,SCHOOL,40.473500,71.716500,30,1-sonli maktab (Marg'ilon sh.)
+uz-sch-109,SCHOOL,40.528500,70.941200,30,7-sonli maktab (Qo'qon sh.)
+uz-sch-110,SCHOOL,40.785200,72.348500,30,4-sonli maktab (Andijon sh.)
+uz-sch-111,SCHOOL,41.003500,71.688200,30,1-sonli maktab (Namangan sh.)
+uz-sch-112,SCHOOL,39.658200,66.971200,30,9-sonli maktab (Samarqand sh.)
+uz-sch-113,SCHOOL,39.771200,64.428500,30,2-sonli maktab (Buxoro sh.)
+uz-kg-201,KINDERGARTEN,41.321000,69.285000,30,45-sonli Davlat Bog'chasi (Toshkent)
+uz-kg-202,KINDERGARTEN,41.282100,69.221500,30,112-sonli Bog'cha (Chilonzor)
+uz-kg-203,KINDERGARTEN,40.383500,71.789100,30,15-sonli Bog'cha (Farg'ona sh.)
+uz-kg-204,KINDERGARTEN,40.778500,72.352100,30,8-sonli Bog'cha (Andijon sh.)
+uz-cw-301,CROSSWALK,41.316200,69.280100,,Tartibga solinmagan piyodalar o'tishi (Navoiy)
+uz-cw-302,CROSSWALK,41.283100,69.226500,,Piyodalar o'tish joyi (Bunyodkor)
+uz-cw-303,CROSSWALK,40.385500,71.784200,,Piyodalar o'tish joyi (Al-Farg'oniy)
+uz-cw-304,CROSSWALK,40.378200,71.795100,,Talabalar o'tish joyi (FDTU oldi)
+uz-sb-401,SPEED_BUMP,41.319100,69.283100,30,Sun'iy notekislik (Maktab oldi)
+uz-sb-402,SPEED_BUMP,40.380500,71.792500,30,Sun'iy notekislik (Farg'ona FDTU ko'chasi)
+uz-sb-403,SPEED_BUMP,40.781200,72.346500,30,Sun'iy notekislik (Andijon Bobur ko'chasi)
+uz-gas-501,GAS_STATION,41.251200,69.328500,,UNG Petro Metan Zapravka (Qo'yliq)
+uz-gas-502,GAS_STATION,41.221500,69.175200,,Real Metan Gaz (Erkin posti)
+uz-gas-503,GAS_STATION,41.368500,69.351200,,Mustang Metan (TTZ aylanmasi)
+uz-gas-504,GAS_STATION,40.401200,71.761500,,Farg'ona Eko Gaz Metan Zapravka
+uz-gas-505,GAS_STATION,40.435100,71.738500,,Marg'ilon Shox Metan Gaz
+uz-gas-506,GAS_STATION,40.541200,70.925100,,Qo'qon Avto Metan Zapravka
+uz-gas-507,GAS_STATION,40.725100,72.285200,,Asaka Yo'li Metan Gaz
+uz-gas-508,GAS_STATION,39.681200,66.915200,,Samarqand Vokzal Metan Gaz

@@ -1,7 +1,13 @@
 @echo off
 chcp 65001 > nul
+title SafeDrive AI - Live Backend Server (Port 8000)
 echo ============================================================
-echo   HAMROH AI - REAL-TIME LIVE BACKEND SERVER (PORT 8000)
+echo   SAFEDRIVE AI (HAMROH AI) - LIVE BACKEND SERVER
+echo   Local URL:    http://localhost:8000
+echo   LAN URL:      http://10.18.212.172:8000
+echo   API Docs:     http://localhost:8000/docs
+echo   Radars API:   http://localhost:8000/api/v1/radars
 echo ============================================================
-cd /d "C:\Users\Abdukamol\AppData\Local\Temp\hamroh_github_sync\backend"
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+cd /d "%~dp0"
+python server.py
+pause

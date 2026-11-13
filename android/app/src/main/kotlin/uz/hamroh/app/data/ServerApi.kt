@@ -31,11 +31,10 @@ class ServerApi(private val prefs: Prefs) {
     ): JSONObject {
         val candidates = buildList {
             if (prefs.serverUrl.isNotBlank()) add(prefs.serverUrl.trimEnd('/'))
-            add("http://172.27.4.106:8000")
-            add("http://192.168.199.78:8000")
-            add("http://10.0.2.2:8000")
-            add("http://127.0.0.1:8000")
-            add("http://10.150.233.172:8000")
+            add("http://10.18.212.172:8000") // Joriy Wi-Fi LAN IP
+            add("http://192.168.56.1:8000")
+            add("http://10.0.2.2:8000") // Android Studio emulyator
+            add("http://127.0.0.1:8000") // Localhost
         }.distinct()
 
         var lastErr: Exception? = null
@@ -252,6 +251,35 @@ class ServerApi(private val prefs: Prefs) {
         prefs.authToken = null
         prefs.phone = null
         prefs.isLoggedIn = false
+    }
+
+    data class RadarItem(
+        val id: Int,
+        val lat: Double,
+        val lon: Double,
+        val speedLimit: Int,
+        val distanceM: Double?,
+        val name: String? = null
+    )
+
+    fun radars(lat: Double? = null, lon: Double? = null): List<RadarItem> {
+        return runCatching {
+            val q = if (lat != null && lon != null) "?lat=$lat&lon=$lon" else ""
+            val obj = request("GET", "/api/v1/radars$q", auth = false)
+            val arr = obj.optJSONArray("radars") ?: JSONArray()
+            val list = ArrayList<RadarItem>()
+            for (i in 0 until arr.length()) {
+                val it = arr.getJSONObject(i)
+                list += RadarItem(
+                    id = it.optInt("id"),
+                    lat = it.optDouble("lat"),
+                    lon = it.optDouble("lon"),
+                    speedLimit = it.optDouble("speed_limit", 60.0).toInt(),
+                    distanceM = if (it.has("distance_m")) it.optDouble("distance_m") else null
+                )
+            }
+            list
+        }.getOrDefault(emptyList())
     }
 
     // --- Jonli Auth, PRO Obuna va Gemini AI Kopilot (100% Har qanday telefonda ishlaydi) ---

@@ -32,6 +32,7 @@ class HamrohApp : Application() {
         Lang.current = prefs.language
         db = LocalDb(this)
         poiRepo = PoiRepository(this, db, prefs)
+        Thread { poiRepo.loadSeedIfEmpty() }.start()
         api = ServerApi(prefs)
         authorship = AuthorshipManager(this)
         if (prefs.shadowModeStartMs == 0L) prefs.shadowModeStartMs = System.currentTimeMillis()

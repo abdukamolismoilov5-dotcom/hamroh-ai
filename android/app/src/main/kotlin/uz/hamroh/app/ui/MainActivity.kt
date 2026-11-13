@@ -4,12 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.FamilyRestroom
@@ -43,6 +46,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = application as HamrohApp
+        AppTheme.isDark = app.prefs.themeMode == "dark"
         setContent {
             HamrohTheme {
                 var langTick by remember { mutableIntStateOf(0) }
@@ -80,11 +84,49 @@ private fun MainScaffold(app: HamrohApp, onLanguage: () -> Unit) {
     var current by rememberSaveable { mutableIntStateOf(0) }
     Scaffold(
         containerColor = HColors.Bg,
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(HColors.Surface)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OfficialLogoBadge(size = 32.dp)
+                    Column {
+                        Text(
+                            "SAFEDRIVE AI",
+                            color = HColors.Text,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.5.sp
+                        )
+                        Text(
+                            "Avtonom ADAS & Radar",
+                            color = HColors.Accent,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DayNightThemeToggle(app)
+                }
+            }
+        },
         bottomBar = {
-            Column(Modifier.fillMaxWidth().background(Color(0xFF08080E))) {
+            Column(Modifier.fillMaxWidth().background(HColors.Surface)) {
                 Box(Modifier.fillMaxWidth().height(1.dp).background(HColors.Border))
                 NavigationBar(
-                    containerColor = Color(0xFF08080E),
+                    containerColor = HColors.Surface,
                     tonalElevation = 0.dp
                 ) {
                     tabs.forEachIndexed { i, t ->
@@ -104,9 +146,9 @@ private fun MainScaffold(app: HamrohApp, onLanguage: () -> Unit) {
                                 )
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = Color.Black,
-                                selectedTextColor = Color.White,
-                                indicatorColor = Color.White,
+                                selectedIconColor = if (HColors.isDark) Color.Black else Color.White,
+                                selectedTextColor = HColors.Text,
+                                indicatorColor = HColors.Accent,
                                 unselectedIconColor = HColors.TextDim,
                                 unselectedTextColor = HColors.TextDim
                             ),

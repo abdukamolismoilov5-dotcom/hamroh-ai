@@ -34,26 +34,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import uz.hamroh.app.HamrohApp
 import uz.hamroh.app.R
 
+object AppTheme {
+    var isDark by mutableStateOf(true)
+}
+
 object HColors {
-    val Bg = Color(0xFF06070A) // Deep Automotive Obsidian Black
-    val Surface = Color(0xFF0F1117) // Carbon Slate Panel
-    val SurfaceHi = Color(0xFF181B24) // Elevated Metallic Slate
-    val Primary = Color(0xFFFFFFFF) // Crisp Pure White
-    val Accent = Color(0xFF38BDF8) // Precision Sky Cyan
-    val Warn = Color(0xFFF59E0B) // Amber Warning
-    val Danger = Color(0xFFFF2E4C) // Crimson Alert
-    val Success = Color(0xFF10B981) // Safe Status Indicator
-    val Text = Color(0xFFFFFFFF) // 100% Pure White
-    val TextDim = Color(0xFFCBD5E1) // High-contrast Silver-Gray (never dark!)
-    val Border = Color(0xFF262B38) // Subtle Precision Hairline
+    val isDark get() = AppTheme.isDark
+    val Bg get() = if (isDark) Color(0xFF06070A) else Color(0xFFF8FAFC) // Deep Obsidian Black vs Crisp Pure Light
+    val Surface get() = if (isDark) Color(0xFF0F1117) else Color(0xFFFFFFFF)
+    val SurfaceHi get() = if (isDark) Color(0xFF181B24) else Color(0xFFF1F5F9)
+    val Primary get() = if (isDark) Color(0xFFFFFFFF) else Color(0xFF0F172A)
+    val Accent get() = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
+    val Warn = Color(0xFFF59E0B)
+    val Danger = Color(0xFFFF2E4C)
+    val Success = Color(0xFF10B981)
+    val Text get() = if (isDark) Color(0xFFFFFFFF) else Color(0xFF0F172A)
+    val TextDim get() = if (isDark) Color(0xFFCBD5E1) else Color(0xFF64748B)
+    val Border get() = if (isDark) Color(0xFF262B38) else Color(0xFFCBD5E1)
 }
 
 @Composable
 fun HamrohTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = darkColorScheme(
+    val isDark = AppTheme.isDark
+    val scheme = if (isDark) {
+        darkColorScheme(
             primary = HColors.Primary,
             onPrimary = Color.Black,
             primaryContainer = Color(0xFF1E222D),
@@ -76,17 +90,64 @@ fun HamrohTheme(content: @Composable () -> Unit) {
             outlineVariant = HColors.Border,
             error = HColors.Danger,
             onError = Color.White,
-        ),
-    ) {
+        )
+    } else {
+        lightColorScheme(
+            primary = Color(0xFF0284C7),
+            onPrimary = Color.White,
+            primaryContainer = Color(0xFFE0F2FE),
+            onPrimaryContainer = Color(0xFF0369A1),
+            secondary = Color(0xFF0284C7),
+            onSecondary = Color.White,
+            secondaryContainer = Color(0xFFE2E8F0),
+            onSecondaryContainer = Color(0xFF0F172A),
+            tertiary = Color(0xFF475569),
+            onTertiary = Color.White,
+            tertiaryContainer = Color(0xFFF1F5F9),
+            onTertiaryContainer = Color(0xFF0F172A),
+            background = Color(0xFFF8FAFC),
+            onBackground = Color(0xFF0F172A),
+            surface = Color(0xFFFFFFFF),
+            onSurface = Color(0xFF0F172A),
+            surfaceVariant = Color(0xFFF1F5F9),
+            onSurfaceVariant = Color(0xFF64748B),
+            outline = Color(0xFF94A3B8),
+            outlineVariant = Color(0xFFCBD5E1),
+            error = HColors.Danger,
+            onError = Color.White,
+        )
+    }
+
+    MaterialTheme(colorScheme = scheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = HColors.Bg,
-            contentColor = Color.White,
+            contentColor = HColors.Text,
         ) {
-            CompositionLocalProvider(LocalContentColor provides Color.White) {
+            CompositionLocalProvider(LocalContentColor provides HColors.Text) {
                 content()
             }
         }
+    }
+}
+
+@Composable
+fun DayNightThemeToggle(app: HamrohApp, modifier: Modifier = Modifier) {
+    val isDark = AppTheme.isDark
+    Button(
+        onClick = {
+            AppTheme.isDark = !AppTheme.isDark
+            app.prefs.themeMode = if (AppTheme.isDark) "dark" else "light"
+        },
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isDark) Color(0xFF1E222D) else Color(0xFFE2E8F0),
+            contentColor = if (isDark) Color.White else Color(0xFF0F172A)
+        ),
+        shape = RoundedCornerShape(10.dp),
+        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+    ) {
+        Text(if (isDark) "☀️ Kun" else "🌙 Tun", fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
