@@ -100,7 +100,7 @@ private fun MainScaffold(app: HamrohApp, onLanguage: () -> Unit) {
                     OfficialLogoBadge(size = 32.dp)
                     Column {
                         Text(
-                            "SAFEDRIVE AI",
+                            "HAMROH AI",
                             color = HColors.Text,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Black,

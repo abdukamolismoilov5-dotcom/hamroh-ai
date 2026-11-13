@@ -174,7 +174,7 @@ fun DriveScreen(app: HamrohApp) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
-                            "SAFEDRIVE AI",
+                            "HAMROH AI",
                             color = Color.White,
                             fontWeight = FontWeight.Black,
                             fontSize = 15.sp,

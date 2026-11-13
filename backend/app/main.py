@@ -134,7 +134,7 @@ def create_app(s: Settings | None = None, sms: SmsSender | None = None, messenge
     db = Database(s.db_path)
     sms = sms or make_sms(s)
     messenger = messenger or make_messenger(s)
-    app = FastAPI(title="Hamroh AI & SafeDrive AI API", version="2.0.0")
+    app = FastAPI(title="Hamroh AI API", version="2.0.0")
     app.state.db, app.state.sms, app.state.messenger = db, sms, messenger
     hits: dict[str, deque] = defaultdict(deque)
 
@@ -347,7 +347,7 @@ def create_app(s: Settings | None = None, sms: SmsSender | None = None, messenge
     @app.post("/api/v1/ai/copilot")
     def ai_copilot(body: CopilotQueryIn):
         prompt_text = (
-            f"Sen SafeDrive AI va Hamroh AI avtomobil xavfsizlik kopilotisan. "
+            f"Sen Hamroh AI avtomobil xavfsizlik kopilotisan. "
             f"Haydovchi tezligi: {body.speed_kmh} km/soat. Aniqlangan xavf: {body.hazard or 'yo`q'}. "
             f"Foydalanuvchi so'rovi: {body.prompt}. "
             f"O'zbek tilida qisqa, professional va haydovchini chalg'itmaydigan aniq 1-2 jumlada maslahat ber."
@@ -369,7 +369,7 @@ def create_app(s: Settings | None = None, sms: SmsSender | None = None, messenge
             fallback = f"Tezlik {int(body.speed_kmh)} km/soat — me'yordan yuqori. Oldingi masofani saqlang va tormozga tayyor turing."
         else:
             fallback = "Yo'l holati barqaror. Xavfsiz masofani saqlab harakatlanishda davom eting."
-        return {"ok": True, "source": "SafeDrive AI On-Device & Cloud", "advice": fallback}
+        return {"ok": True, "source": "Hamroh AI On-Device & Cloud", "advice": fallback}
 
     @app.get("/api/v1/ai/status")
     def ai_status():
@@ -489,7 +489,7 @@ def create_app(s: Settings | None = None, sms: SmsSender | None = None, messenge
             "total": len(items),
             "server_time": int(time.time()),
             "status": "online",
-            "provider": "SafeDrive AI National Radar Network"
+            "provider": "Hamroh AI National Radar Network"
         }
 
     # --- metan (FR-3.5) ---

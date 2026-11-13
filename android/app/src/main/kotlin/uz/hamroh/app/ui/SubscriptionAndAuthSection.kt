@@ -74,7 +74,7 @@ fun SubscriptionSection(app: HamrohApp) {
     var cardExpiry by remember { mutableStateOf("12/28") }
     var successMsg by remember { mutableStateOf<String?>(null) }
 
-    Card(title = T("SafeDrive AI Pro Obuna", "Подписка SafeDrive AI Pro", "SafeDrive AI Pro Subscription")) {
+    Card(title = T("Hamroh AI Pro Obuna", "Подписка Hamroh AI Pro", "Hamroh AI Pro Subscription")) {
         // Status Badge
         Row(
             modifier = Modifier.fillMaxWidth(),

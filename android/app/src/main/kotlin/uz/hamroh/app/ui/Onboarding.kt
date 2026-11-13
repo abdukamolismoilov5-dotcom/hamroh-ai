@@ -95,7 +95,7 @@ fun OnboardingFlow(app: HamrohApp, onLanguage: () -> Unit, onDone: () -> Unit) {
             OfficialLogoBadge(size = 56.dp)
             Column {
                 Text(
-                    text = "SAFEDRIVE AI",
+                    text = "HAMROH AI",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
@@ -172,9 +172,9 @@ private fun ConsentStep(app: HamrohApp, next: () -> Unit) {
     Card(title = T("Xavfsizlik va maxfiylik shartlari", "Безопасность и конфиденциальность", "Safety & Privacy Terms")) {
         Text(
             T(
-                "SafeDrive AI yo'ldagi xavf haqida ovoz bilan ogohlantiruvchi intellektual yordamchidir. Avtomobilni haydovchi boshqaradi va barcha qarorlar haydovchida qoladi.\n\nVideo va yuz tasviri telefoningizdan tashqariga chiqmaydi — barcha AI tahlil qurilmaning o'zida (On-Device) bajariladi.",
-                "SafeDrive AI — интеллектуальный помощник, предупреждающий об опасности голосом. Автомобилем управляет водитель.\n\nВидео и изображение лица не покидают телефон — весь ИИ-анализ выполняется на устройстве.",
-                "SafeDrive AI is an intelligent assistant that warns about road hazards by voice. The driver stays in full control.\n\nVideo and face images never leave your phone — all AI processing runs locally on-device.",
+                "Hamroh AI yo'ldagi xavf haqida ovoz bilan ogohlantiruvchi intellektual yordamchidir. Avtomobilni haydovchi boshqaradi va barcha qarorlar haydovchida qoladi.\n\nVideo va yuz tasviri telefoningizdan tashqariga chiqmaydi — barcha AI tahlil qurilmaning o'zida (On-Device) bajariladi.",
+                "Hamroh AI — интеллектуальный помощник, предупреждающий об опасности голосом. Автомобилем управляет водитель.\n\nВидео и изображение лица не покидают телефон — весь ИИ-анализ выполняется на устройстве.",
+                "Hamroh AI is an intelligent assistant that warns about road hazards by voice. The driver stays in full control.\n\nVideo and face images never leave your phone — all AI processing runs locally on-device.",
             ),
             color = Color.White,
             fontSize = 14.sp,
@@ -376,9 +376,9 @@ private fun BackgroundStep(next: () -> Unit) {
     Card {
         Text(
             T(
-                "SafeDrive AI mashinaga o'tirganingizda o'zi yonishi va Yandex/Google Navigator ustida ishlashi uchun quyidagi sozlamalarni yoqishingiz mumkin:",
-                "Чтобы SafeDrive AI включался сам и работал поверх навигатора, включите следующие параметры:",
-                "For SafeDrive AI to auto-start in your car and run over your navigation app, you can enable the following:"
+                "Hamroh AI mashinaga o'tirganingizda o'zi yonishi va Yandex/Google Navigator ustida ishlashi uchun quyidagi sozlamalarni yoqishingiz mumkin:",
+                "Чтобы Hamroh AI включался сам и работал поверх навигатора, включите следующие параметры:",
+                "For Hamroh AI to auto-start in your car and run over your navigation app, you can enable the following:"
             ),
             color = Color.White,
             fontSize = 14.sp,
@@ -496,9 +496,9 @@ private fun CarStep(app: HamrohApp, done: () -> Unit) {
     )
     Text(
         T(
-            "Tanlasangiz, SafeDrive AI shu qurilmaga ulanganda avtomatik ishga tushadi. Bo'lmasa, GPS tezlik orqali o'zi aniqlanadi.",
-            "Если выбрать, SafeDrive AI включится при подключении. Иначе — автоматически по скорости.",
-            "If selected, SafeDrive AI starts automatically when connected. Otherwise it detects driving by speed."
+            "Tanlasangiz, Hamroh AI shu qurilmaga ulanganda avtomatik ishga tushadi. Bo'lmasa, GPS tezlik orqali o'zi aniqlanadi.",
+            "Если выбрать, Hamroh AI включится при подключении. Иначе — автоматически по скорости.",
+            "If selected, Hamroh AI starts automatically when connected. Otherwise it detects driving by speed."
         ),
         color = HColors.TextDim,
         fontSize = 14.sp,

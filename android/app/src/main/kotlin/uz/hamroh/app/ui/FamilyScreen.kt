@@ -84,7 +84,7 @@ fun FamilyScreen(app: HamrohApp) {
                         val link = withContext(Dispatchers.IO) { runCatching { app.api.linkCode("family") }.getOrNull() }
                         if (link == null) message = T("Server bilan aloqa yo'q", "Нет связи с сервером", "No server connection")
                         else ctx.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT,
-                            T("Meni SafeDrive AI favqulodda kontaktingiz sifatida qo'shing: ", "Добавьте меня в экстренные контакты SafeDrive AI: ", "Add me as your SafeDrive AI emergency contact: ") + link), null))
+                            T("Meni Hamroh AI favqulodda kontaktingiz sifatida qo'shing: ", "Добавьте меня в экстренные контакты Hamroh AI: ", "Add me as your Hamroh AI emergency contact: ") + link), null))
                     }
                 }, modifier = Modifier.fillMaxWidth()) { Text(T("Yaqinni taklif qilish", "Пригласить близкого", "Invite a family member")) }
                 OutlinedButton(onClick = { reload++ }, modifier = Modifier.fillMaxWidth()) { Text(T("Yangilash", "Обновить", "Refresh")) }
